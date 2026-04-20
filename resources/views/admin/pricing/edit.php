@@ -1,0 +1,13 @@
+<div class="page-head"><h4 class="page-title">Edit Paket</h4><a href="<?= url('/admin/pricing') ?>" class="btn-admin-back"><i class="fas fa-arrow-left"></i> Kembali</a></div>
+<div class="admin-card"><div class="card-body">
+    <form method="POST" action="<?= url('/admin/pricing/'.$item['id']) ?>" class="admin-form">
+        <?= \App\Helpers\Csrf::field() ?>
+        <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Nama Paket <span class="text-danger">*</span></label><input type="text" class="form-control" name="name" value="<?= e($item['name']) ?>" required></div><div class="col-md-6 mb-3"><label class="form-label">Jumlah Kamera</label><input type="number" class="form-control" name="camera_count" value="<?= (int)$item['camera_count'] ?>" min="1" required></div></div>
+        <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Harga Promo (Rp)</label><input type="number" class="form-control" name="price" value="<?= (int)$item['price'] ?>" min="0" required></div><div class="col-md-6 mb-3"><label class="form-label">Harga Asli (Rp)</label><input type="number" class="form-control" name="price_original" value="<?= (int)$item['price_original'] ?>" min="0"></div></div>
+        <div class="mb-3"><label class="form-label">Deskripsi</label><textarea class="form-control" name="description" rows="2"><?= e($item['description']) ?></textarea></div>
+        <div class="mb-3"><label class="form-label">Fitur</label><textarea class="form-control" name="features" rows="5"><?= e(implode("\n", array_column($item['features'], 'feature'))) ?></textarea></div>
+        <div class="mb-3"><label class="form-label">Pesan WhatsApp</label><textarea class="form-control" name="whatsapp_message" rows="2"><?= e($item['whatsapp_message']) ?></textarea></div>
+        <div class="row"><div class="col-md-4 mb-3"><label class="form-label">Urutan</label><input type="number" class="form-control" name="sort_order" value="<?= (int)$item['sort_order'] ?>" min="0"></div><div class="col-md-4 mb-3 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" value="1" <?= $item['is_featured']?'checked':'' ?>><label class="form-check-label" for="is_featured">Unggulan</label></div></div><div class="col-md-4 mb-3 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" <?= $item['is_active']?'checked':'' ?>><label class="form-check-label" for="is_active">Aktif</label></div></div></div>
+        <button type="submit" class="btn-admin btn-admin-fill"><i class="fas fa-check"></i> Simpan</button>
+    </form>
+</div></div>

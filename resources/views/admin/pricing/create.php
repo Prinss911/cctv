@@ -1,0 +1,13 @@
+<div class="page-head"><h4 class="page-title">Tambah Paket</h4><a href="<?= url('/admin/pricing') ?>" class="btn-admin-back"><i class="fas fa-arrow-left"></i> Kembali</a></div>
+<div class="admin-card"><div class="card-body">
+    <form method="POST" action="<?= url('/admin/pricing') ?>" class="admin-form">
+        <?= \App\Helpers\Csrf::field() ?>
+        <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Nama Paket <span class="text-danger">*</span></label><input type="text" class="form-control" name="name" required></div><div class="col-md-6 mb-3"><label class="form-label">Jumlah Kamera <span class="text-danger">*</span></label><input type="number" class="form-control" name="camera_count" value="2" min="1" required></div></div>
+        <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Harga Promo (Rp) <span class="text-danger">*</span></label><input type="number" class="form-control" name="price" value="0" min="0" required></div><div class="col-md-6 mb-3"><label class="form-label">Harga Asli (Rp)</label><input type="number" class="form-control" name="price_original" value="0" min="0"><div class="form-text">Harga coret / sebelum diskon.</div></div></div>
+        <div class="mb-3"><label class="form-label">Deskripsi</label><textarea class="form-control" name="description" rows="2"></textarea></div>
+        <div class="mb-3"><label class="form-label">Fitur</label><textarea class="form-control" name="features" rows="5" placeholder="Satu fitur per baris"></textarea><div class="form-text">Satu fitur per baris.</div></div>
+        <div class="mb-3"><label class="form-label">Pesan WhatsApp</label><textarea class="form-control" name="whatsapp_message" rows="2" placeholder="Halo, saya tertarik dengan paket..."></textarea></div>
+        <div class="row"><div class="col-md-4 mb-3"><label class="form-label">Urutan</label><input type="number" class="form-control" name="sort_order" value="0" min="0"></div><div class="col-md-4 mb-3 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" value="1"><label class="form-check-label" for="is_featured">Unggulan</label></div></div><div class="col-md-4 mb-3 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked><label class="form-check-label" for="is_active">Aktif</label></div></div></div>
+        <button type="submit" class="btn-admin btn-admin-fill"><i class="fas fa-check"></i> Simpan</button>
+    </form>
+</div></div>

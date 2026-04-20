@@ -1,0 +1,14 @@
+.env
+storage/db/*.db
+storage/logs/*.log
+storage/cache/*
+public/uploads/gallery/*
+public/uploads/sliders/*
+public/uploads/testimonials/*
+public/uploads/clients/*
+public/uploads/logo/*
+!public/uploads/**/.gitkeep
+vendor/
+.DS_Store
+Thumbs.db
+*.swp
