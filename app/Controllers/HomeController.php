@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\SliderModel;
 use App\Models\PricingModel;
+use App\Models\PricingBrandModel;
 use App\Models\GalleryModel;
 use App\Models\TestimonialModel;
 use App\Models\ClientModel;
@@ -14,13 +15,15 @@ class HomeController
     public function index(): void
     {
         $sliders = (new SliderModel())->getActive();
-        $packages = (new PricingModel())->getActiveWithFeatures();
+        $pricingModel = new PricingModel();
+        $packages = $pricingModel->getActiveWithFeatures(); // grouped by brand_id
+        $brands = (new PricingBrandModel())->getActive();
         $gallery = (new GalleryModel())->getActive();
         $testimonials = (new TestimonialModel())->getActive();
         $clients = (new ClientModel())->getActive();
 
         View::render('home/index', compact(
-            'sliders', 'packages', 'gallery', 'testimonials', 'clients'
+            'sliders', 'packages', 'brands', 'gallery', 'testimonials', 'clients'
         ), 'main');
     }
 }

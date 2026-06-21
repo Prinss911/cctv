@@ -637,6 +637,7 @@ $isLogin = $currentPath === '/admin/login';
                 <li class="nav-item"><a class="nav-link <?= $currentPath === '/admin' ? 'active' : '' ?>" href="<?= url('/admin') ?>"><i class="fas fa-th-large"></i>Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link <?= str_starts_with($currentPath, '/admin/sliders') ? 'active' : '' ?>" href="<?= url('/admin/sliders') ?>"><i class="fas fa-images"></i>Slider</a></li>
                 <li class="nav-item"><a class="nav-link <?= str_starts_with($currentPath, '/admin/pricing') ? 'active' : '' ?>" href="<?= url('/admin/pricing') ?>"><i class="fas fa-tags"></i>Paket Harga</a></li>
+                <li class="nav-item"><a class="nav-link <?= str_starts_with($currentPath, '/admin/brands') ? 'active' : '' ?>" href="<?= url('/admin/brands') ?>"><i class="fas fa-tag"></i>Merk</a></li>
                 <li class="nav-item"><a class="nav-link <?= str_starts_with($currentPath, '/admin/gallery') ? 'active' : '' ?>" href="<?= url('/admin/gallery') ?>"><i class="fas fa-camera"></i>Galeri</a></li>
                 <li class="nav-item"><a class="nav-link <?= str_starts_with($currentPath, '/admin/testimonials') ? 'active' : '' ?>" href="<?= url('/admin/testimonials') ?>"><i class="fas fa-star"></i>Testimoni</a></li>
                 <li class="nav-item"><a class="nav-link <?= str_starts_with($currentPath, '/admin/clients') ? 'active' : '' ?>" href="<?= url('/admin/clients') ?>"><i class="fas fa-handshake"></i>Client</a></li>

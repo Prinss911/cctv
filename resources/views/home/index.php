@@ -105,6 +105,69 @@
             <h2 class="section-heading" style="max-width:100%">Pilih Paket Sesuai Kebutuhan</h2>
             <p class="section-desc" style="margin:1rem auto 0">Sudah termasuk pemasangan, konfigurasi, dan garansi</p>
         </div>
+
+        <?php if (!empty($brands)): ?>
+        <!-- Brand Tabs -->
+        <div class="brand-tabs-wrapper reveal">
+            <ul class="brand-tabs nav nav-pills justify-content-center mb-4" id="brandTabs" role="tablist">
+                <?php foreach ($brands as $i => $brand): ?>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link <?= $i === 0 ? 'active' : '' ?>" id="tab-<?= $brand['slug'] ?>" data-bs-toggle="pill" data-bs-target="#panel-<?= $brand['slug'] ?>" type="button" role="tab">
+                        <?php if ($brand['logo']): ?>
+                        <img src="<?= url('/uploads/' . $brand['logo']) ?>" alt="<?= e($brand['name']) ?>" style="height: 24px; margin-right: 8px;">
+                        <?php endif; ?>
+                        <?= e($brand['name']) ?>
+                    </button>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+
+            <div class="tab-content" id="brandTabsContent">
+                <?php foreach ($brands as $i => $brand): ?>
+                <div class="tab-pane fade <?= $i === 0 ? 'show active' : '' ?>" id="panel-<?= $brand['slug'] ?>" role="tabpanel">
+                    <div class="row g-3 justify-content-center">
+                        <?php if (!empty($packages[$brand['id']])): ?>
+                            <?php foreach ($packages[$brand['id']] as $idx => $pkg): ?>
+                            <div class="col-lg-3 col-md-6 reveal reveal-d<?= min($idx + 1, 4) ?>">
+                                <div class="price-card <?= $pkg['is_featured'] ? 'featured' : '' ?>">
+                                    <div class="price-head">
+                                        <div class="price-cam-num"><?= $pkg['camera_count'] ?></div>
+                                        <div class="price-cam-label">Kamera</div>
+                                        <div class="price-name"><?= e($pkg['name']) ?></div>
+                                    </div>
+                                    <div class="price-body">
+                                        <?php if ($pkg['price_original'] > 0): ?>
+                                        <div class="price-original"><?= format_rupiah($pkg['price_original']) ?></div>
+                                        <?php endif; ?>
+                                        <div class="price-amount"><?= format_rupiah($pkg['price']) ?></div>
+                                        <?php if ($pkg['price_original'] > $pkg['price']): ?>
+                                        <div class="price-save">Hemat <?= format_rupiah($pkg['price_original'] - $pkg['price']) ?></div>
+                                        <?php endif; ?>
+                                        <ul class="price-features">
+                                            <?php foreach ($pkg['features'] as $feat): ?>
+                                            <li><i class="fas fa-check"></i> <?= e($feat['feature']) ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                        <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode($pkg['whatsapp_message']) ?>"
+                                           target="_blank" class="btn-price">
+                                            <i class="fab fa-whatsapp me-1"></i>Pesan Sekarang
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                        <div class="col-12 text-center text-muted py-5">
+                            <p>Belum ada paket untuk brand ini.</p>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php else: ?>
+        <!-- Fallback: show all packages without tabs (legacy) -->
         <div class="row g-3 justify-content-center">
             <?php foreach ($packages as $idx => $pkg): ?>
             <div class="col-lg-3 col-md-6 reveal reveal-d<?= min($idx + 1, 4) ?>">
@@ -136,6 +199,7 @@
             </div>
             <?php endforeach; ?>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 

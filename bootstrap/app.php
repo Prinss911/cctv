@@ -39,6 +39,11 @@ if (!function_exists('e')) {
 if (!function_exists('asset')) {
     function asset(string $path): string {
         $base = rtrim(env('APP_URL', ''), '/');
+        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+            $base = rtrim('https://' . $_SERVER['HTTP_X_FORWARDED_HOST'], '/');
+        } elseif (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== 'localhost:8000' && $_SERVER['HTTP_HOST'] !== '127.0.0.1:8000') {
+            $base = rtrim('https://' . $_SERVER['HTTP_HOST'], '/');
+        }
         return $base . '/assets/' . ltrim($path, '/');
     }
 }
@@ -46,6 +51,11 @@ if (!function_exists('asset')) {
 if (!function_exists('upload_url')) {
     function upload_url(string $path): string {
         $base = rtrim(env('APP_URL', ''), '/');
+        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+            $base = rtrim('https://' . $_SERVER['HTTP_X_FORWARDED_HOST'], '/');
+        } elseif (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== 'localhost:8000' && $_SERVER['HTTP_HOST'] !== '127.0.0.1:8000') {
+            $base = rtrim('https://' . $_SERVER['HTTP_HOST'], '/');
+        }
         return $base . '/uploads/' . ltrim($path, '/');
     }
 }
@@ -53,6 +63,11 @@ if (!function_exists('upload_url')) {
 if (!function_exists('url')) {
     function url(string $path = ''): string {
         $base = rtrim(env('APP_URL', ''), '/');
+        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+            $base = rtrim('https://' . $_SERVER['HTTP_X_FORWARDED_HOST'], '/');
+        } elseif (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== 'localhost:8000' && $_SERVER['HTTP_HOST'] !== '127.0.0.1:8000') {
+            $base = rtrim('https://' . $_SERVER['HTTP_HOST'], '/');
+        }
         return $base . '/' . ltrim($path, '/');
     }
 }

@@ -7,6 +7,7 @@ class DatabaseSeeder
         $this->seedUsers($db);
         $this->seedSettings($db);
         $this->seedSliders($db);
+        $this->seedPricingBrands($db);
         $this->seedPricing($db);
         $this->seedTestimonials($db);
         $this->seedClients($db);
@@ -18,10 +19,18 @@ class DatabaseSeeder
     {
         $db->exec("DELETE FROM users");
         $stmt = $db->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
+        // Admin utama
         $stmt->execute([
             'Administrator',
             'admin@bayucctv.com',
             password_hash('admin123', PASSWORD_BCRYPT, ['cost' => 12]),
+            'admin'
+        ]);
+        // Admin tambahan (email: admin2@bayucctv.com, password: admin) - email berbeda karena UNIQUE
+        $stmt->execute([
+            'Admin',
+            'admin2@bayucctv.com',
+            password_hash('admin', PASSWORD_BCRYPT, ['cost' => 12]),
             'admin'
         ]);
         echo "  Seeded: users\n";
@@ -75,68 +84,137 @@ class DatabaseSeeder
         echo "  Seeded: sliders\n";
     }
 
+    private function seedPricingBrands(PDO $db): void
+    {
+        $db->exec("DELETE FROM pricing_brands");
+        $brands = [
+            ['Hikvision', 'hikvision', 'hikvision.png', 1, 1],
+            ['Dahua', 'dahua', 'dahua.png', 1, 2],
+            ['SPC', 'spc', 'spc.png', 1, 3],
+        ];
+
+        $stmt = $db->prepare("INSERT INTO pricing_brands (name, slug, logo, is_active, sort_order) VALUES (?, ?, ?, ?, ?)");
+        foreach ($brands as $b) {
+            $stmt->execute($b);
+        }
+        echo "  Seeded: pricing_brands\n";
+    }
+
     private function seedPricing(PDO $db): void
     {
         $db->exec("DELETE FROM pricing_features");
         $db->exec("DELETE FROM pricing_packages");
-
         $packages = [
+            // Hikvision packages (brand_id = 1)
             [
-                'name' => 'Paket 2 Kamera',
+                'name' => 'Hikvision Paket 2 Kamera',
                 'camera_count' => 2,
                 'price' => 2700000,
                 'price_original' => 3500000,
                 'description' => 'Cocok untuk rumah kecil dan toko',
-                'whatsapp_message' => 'Halo, saya tertarik dengan Paket 2 Kamera CCTV. Mohon info lebih lanjut.',
+                'whatsapp_message' => 'Halo, saya tertarik dengan Hikvision Paket 2 Kamera CCTV. Mohon info lebih lanjut.',
                 'is_featured' => 0,
                 'sort_order' => 1,
+                'brand_id' => 1,
                 'features' => ['2 Kamera 2MP Outdoor/Indoor', 'DVR 4 Channel', 'Hardisk 500GB', 'Kabel 40 Meter', 'Pemasangan', 'Garansi 1 Tahun'],
             ],
             [
-                'name' => 'Paket 4 Kamera',
+                'name' => 'Hikvision Paket 4 Kamera',
                 'camera_count' => 4,
                 'price' => 4000000,
                 'price_original' => 5200000,
                 'description' => 'Paling populer untuk rumah dan toko',
-                'whatsapp_message' => 'Halo, saya tertarik dengan Paket 4 Kamera CCTV. Mohon info lebih lanjut.',
+                'whatsapp_message' => 'Halo, saya tertarik dengan Hikvision Paket 4 Kamera CCTV. Mohon info lebih lanjut.',
                 'is_featured' => 1,
                 'sort_order' => 2,
+                'brand_id' => 1,
                 'features' => ['4 Kamera 2MP Outdoor/Indoor', 'DVR 4 Channel', 'Hardisk 1TB', 'Kabel 80 Meter', 'Pemasangan', 'Garansi 1 Tahun'],
             ],
             [
-                'name' => 'Paket 8 Kamera',
+                'name' => 'Hikvision Paket 8 Kamera',
                 'camera_count' => 8,
                 'price' => 7200000,
                 'price_original' => 9000000,
                 'description' => 'Untuk gedung dan area luas',
-                'whatsapp_message' => 'Halo, saya tertarik dengan Paket 8 Kamera CCTV. Mohon info lebih lanjut.',
+                'whatsapp_message' => 'Halo, saya tertarik dengan Hikvision Paket 8 Kamera CCTV. Mohon info lebih lanjut.',
                 'is_featured' => 0,
                 'sort_order' => 3,
+                'brand_id' => 1,
                 'features' => ['8 Kamera 2MP Outdoor/Indoor', 'DVR 8 Channel', 'Hardisk 2TB', 'Kabel 160 Meter', 'Pemasangan', 'Garansi 1 Tahun'],
             ],
+            // Dahua packages (brand_id = 2)
             [
-                'name' => 'Paket 16 Kamera',
-                'camera_count' => 16,
-                'price' => 13200000,
-                'price_original' => 16500000,
-                'description' => 'Untuk kantor dan pabrik besar',
-                'whatsapp_message' => 'Halo, saya tertarik dengan Paket 16 Kamera CCTV. Mohon info lebih lanjut.',
+                'name' => 'Dahua Paket 2 Kamera',
+                'camera_count' => 2,
+                'price' => 2500000,
+                'price_original' => 3200000,
+                'description' => 'Cocok untuk rumah kecil dan toko',
+                'whatsapp_message' => 'Halo, saya tertarik dengan Dahua Paket 2 Kamera CCTV. Mohon info lebih lanjut.',
                 'is_featured' => 0,
-                'sort_order' => 4,
-                'features' => ['16 Kamera 2MP Outdoor/Indoor', 'DVR 16 Channel', 'Hardisk 4TB', 'Kabel 320 Meter', 'Pemasangan', 'Garansi 1 Tahun'],
+                'sort_order' => 1,
+                'brand_id' => 2,
+                'features' => ['2 Kamera 2MP Outdoor/Indoor', 'DVR 4 Channel', 'Hardisk 500GB', 'Kabel 40 Meter', 'Pemasangan', 'Garansi 1 Tahun'],
+            ],
+            [
+                'name' => 'Dahua Paket 4 Kamera',
+                'camera_count' => 4,
+                'price' => 3800000,
+                'price_original' => 4800000,
+                'description' => 'Paling populer untuk rumah dan toko',
+                'whatsapp_message' => 'Halo, saya tertarik dengan Dahua Paket 4 Kamera CCTV. Mohon info lebih lanjut.',
+                'is_featured' => 0,
+                'sort_order' => 2,
+                'brand_id' => 2,
+                'features' => ['4 Kamera 2MP Outdoor/Indoor', 'DVR 4 Channel', 'Hardisk 1TB', 'Kabel 80 Meter', 'Pemasangan', 'Garansi 1 Tahun'],
+            ],
+            [
+                'name' => 'Dahua Paket 8 Kamera',
+                'camera_count' => 8,
+                'price' => 6800000,
+                'price_original' => 8500000,
+                'description' => 'Untuk gedung dan area luas',
+                'whatsapp_message' => 'Halo, saya tertarik dengan Dahua Paket 8 Kamera CCTV. Mohon info lebih lanjut.',
+                'is_featured' => 0,
+                'sort_order' => 3,
+                'brand_id' => 2,
+                'features' => ['8 Kamera 2MP Outdoor/Indoor', 'DVR 8 Channel', 'Hardisk 2TB', 'Kabel 160 Meter', 'Pemasangan', 'Garansi 1 Tahun'],
+            ],
+            // SPC packages (brand_id = 3)
+            [
+                'name' => 'SPC Paket 4 Kamera',
+                'camera_count' => 4,
+                'price' => 3500000,
+                'price_original' => 4500000,
+                'description' => 'Paket hemat untuk rumah dan toko',
+                'whatsapp_message' => 'Halo, saya tertarik dengan SPC Paket 4 Kamera CCTV. Mohon info lebih lanjut.',
+                'is_featured' => 0,
+                'sort_order' => 1,
+                'brand_id' => 3,
+                'features' => ['4 Kamera 2MP Outdoor/Indoor', 'DVR 4 Channel', 'Hardisk 1TB', 'Kabel 80 Meter', 'Pemasangan', 'Garansi 1 Tahun'],
+            ],
+            [
+                'name' => 'SPC Paket 8 Kamera',
+                'camera_count' => 8,
+                'price' => 6500000,
+                'price_original' => 8000000,
+                'description' => 'Untuk gedung dan area luas',
+                'whatsapp_message' => 'Halo, saya tertarik dengan SPC Paket 8 Kamera CCTV. Mohon info lebih lanjut.',
+                'is_featured' => 0,
+                'sort_order' => 2,
+                'brand_id' => 3,
+                'features' => ['8 Kamera 2MP Outdoor/Indoor', 'DVR 8 Channel', 'Hardisk 2TB', 'Kabel 160 Meter', 'Pemasangan', 'Garansi 1 Tahun'],
             ],
         ];
 
-        $stmtPkg = $db->prepare("INSERT INTO pricing_packages (name, camera_count, price, price_original, description, whatsapp_message, is_featured, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmtPkg = $db->prepare("INSERT INTO pricing_packages (name, camera_count, price, price_original, description, whatsapp_message, is_featured, sort_order, brand_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmtFeat = $db->prepare("INSERT INTO pricing_features (package_id, feature, sort_order) VALUES (?, ?, ?)");
 
         foreach ($packages as $pkg) {
-            $stmtPkg->execute([
-                $pkg['name'], $pkg['camera_count'], $pkg['price'], $pkg['price_original'],
-                $pkg['description'], $pkg['whatsapp_message'], $pkg['is_featured'], $pkg['sort_order']
-            ]);
+            $features = $pkg['features'];
+            unset($pkg['features']);
+            $stmtPkg->execute(array_values($pkg));
             $pkgId = $db->lastInsertId();
-            foreach ($pkg['features'] as $i => $feat) {
+            foreach ($features as $i => $feat) {
                 $stmtFeat->execute([$pkgId, $feat, $i + 1]);
             }
         }

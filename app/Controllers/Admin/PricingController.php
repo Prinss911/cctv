@@ -4,27 +4,32 @@ namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\PricingModel;
+use App\Models\PricingBrandModel;
 use App\Helpers\{View, Flash, Csrf};
 
 class PricingController
 {
     private PricingModel $model;
+    private PricingBrandModel $brandModel;
 
     public function __construct()
     {
         AuthMiddleware::handle();
         $this->model = new PricingModel();
+        $this->brandModel = new PricingBrandModel();
     }
 
     public function index(): void
     {
-        $items = $this->model->getAllWithFeatures();
-        View::render('admin/pricing/index', compact('items'), 'admin');
+        $items = $this->model->getAllWithBrand();
+        $brands = $this->brandModel->getAll();
+        View::render('admin/pricing/index', compact('items', 'brands'), 'admin');
     }
 
     public function create(): void
     {
-        View::render('admin/pricing/create', [], 'admin');
+        $brands = $this->brandModel->getActive();
+        View::render('admin/pricing/create', compact('brands'), 'admin');
     }
 
     public function store(): void
@@ -40,6 +45,7 @@ class PricingController
             'is_featured'       => isset($_POST['is_featured']) ? 1 : 0,
             'is_active'         => isset($_POST['is_active']) ? 1 : 0,
             'sort_order'        => (int)($_POST['sort_order'] ?? 0),
+            'brand_id'          => !empty($_POST['brand_id']) ? (int)$_POST['brand_id'] : null,
         ]);
 
         $features = array_filter(explode("\n", $_POST['features'] ?? ''));
@@ -57,7 +63,8 @@ class PricingController
             redirect('/admin/pricing');
         }
         $item['features'] = $this->model->getFeatures((int)$id);
-        View::render('admin/pricing/edit', compact('item'), 'admin');
+        $brands = $this->brandModel->getActive();
+        View::render('admin/pricing/edit', compact('item', 'brands'), 'admin');
     }
 
     public function update(string $id): void
@@ -73,6 +80,7 @@ class PricingController
             'is_featured'       => isset($_POST['is_featured']) ? 1 : 0,
             'is_active'         => isset($_POST['is_active']) ? 1 : 0,
             'sort_order'        => (int)($_POST['sort_order'] ?? 0),
+            'brand_id'          => !empty($_POST['brand_id']) ? (int)$_POST['brand_id'] : null,
         ]);
 
         $features = array_filter(explode("\n", $_POST['features'] ?? ''));

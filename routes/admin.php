@@ -32,6 +32,16 @@ $router->post('/admin/pricing/{id}', 'Admin\PricingController@update');
 $router->post('/admin/pricing/{id}/delete', 'Admin\PricingController@destroy');
 $router->post('/admin/pricing/reorder', 'Admin\PricingController@reorder');
 
+$router->get('/admin/brands', 'Admin\BrandController@index');
+$router->get('/admin/brands/create', 'Admin\BrandController@create');
+$router->post('/admin/brands', 'Admin\BrandController@store');
+$router->get('/admin/brands/{id}/edit', 'Admin\BrandController@edit');
+$router->post('/admin/brands/{id}', 'Admin\BrandController@update');
+$router->post('/admin/brands/{id}/delete', 'Admin\BrandController@destroy');
+$router->post('/admin/brands/reorder', 'Admin\BrandController@reorder');
+
+$router->get('/admin/testimonials', 'Admin\TestimonialController@index');
+
 $router->get('/admin/testimonials', 'Admin\TestimonialController@index');
 $router->get('/admin/testimonials/create', 'Admin\TestimonialController@create');
 $router->post('/admin/testimonials', 'Admin\TestimonialController@store');
