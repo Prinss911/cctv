@@ -36,39 +36,56 @@ if (!function_exists('e')) {
     }
 }
 
+if (!function_exists('base_url')) {
+    function base_url(): string {
+        // Detect scheme from X-Forwarded-Proto (Cloudflare) or direct HTTPS
+        $scheme = 'http';
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+            $scheme = 'https';
+        } elseif (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            $scheme = 'https';
+        }
+
+        // 1) Use X-Forwarded-Host if present and valid (Cloudflare / reverse proxy)
+        $forwardedHost = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? '';
+        if ($forwardedHost !== '') {
+            $hostPart = explode(':', $forwardedHost)[0];
+            if (filter_var($hostPart, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+                return $scheme . '://' . rtrim($forwardedHost, '/');
+            }
+        }
+
+        // 2) Use HTTP_HOST if it's a real domain name (not an IP)
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        if ($host !== '') {
+            $hostPart = explode(':', $host)[0];
+            if (!filter_var($hostPart, FILTER_VALIDATE_IP)) {
+                if (filter_var($hostPart, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+                    return $scheme . '://' . rtrim($host, '/');
+                }
+            }
+        }
+
+        // 3) Fall back to APP_URL from .env
+        return rtrim(env('APP_URL', ''), '/');
+    }
+}
+
 if (!function_exists('asset')) {
     function asset(string $path): string {
-        $base = rtrim(env('APP_URL', ''), '/');
-        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
-            $base = rtrim('https://' . $_SERVER['HTTP_X_FORWARDED_HOST'], '/');
-        } elseif (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== 'localhost:8000' && $_SERVER['HTTP_HOST'] !== '127.0.0.1:8000') {
-            $base = rtrim('https://' . $_SERVER['HTTP_HOST'], '/');
-        }
-        return $base . '/assets/' . ltrim($path, '/');
+        return base_url() . '/assets/' . ltrim($path, '/');
     }
 }
 
 if (!function_exists('upload_url')) {
     function upload_url(string $path): string {
-        $base = rtrim(env('APP_URL', ''), '/');
-        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
-            $base = rtrim('https://' . $_SERVER['HTTP_X_FORWARDED_HOST'], '/');
-        } elseif (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== 'localhost:8000' && $_SERVER['HTTP_HOST'] !== '127.0.0.1:8000') {
-            $base = rtrim('https://' . $_SERVER['HTTP_HOST'], '/');
-        }
-        return $base . '/uploads/' . ltrim($path, '/');
+        return base_url() . '/uploads/' . ltrim($path, '/');
     }
 }
 
 if (!function_exists('url')) {
     function url(string $path = ''): string {
-        $base = rtrim(env('APP_URL', ''), '/');
-        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
-            $base = rtrim('https://' . $_SERVER['HTTP_X_FORWARDED_HOST'], '/');
-        } elseif (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== 'localhost:8000' && $_SERVER['HTTP_HOST'] !== '127.0.0.1:8000') {
-            $base = rtrim('https://' . $_SERVER['HTTP_HOST'], '/');
-        }
-        return $base . '/' . ltrim($path, '/');
+        return base_url() . '/' . ltrim($path, '/');
     }
 }
 
@@ -109,12 +126,77 @@ $config = require BASE_PATH . '/config/app.php';
 date_default_timezone_set($config['timezone'] ?? 'Asia/Jakarta');
 
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => isset($_SERVER['HTTPS']),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
+}
+
+// Idle session timeout: 30 minutes of inactivity
+$idleTimeout = 1800;
+$lastActivity = $_SESSION['last_activity'] ?? 0;
+if ($lastActivity && (time() - $lastActivity) > $idleTimeout) {
+    $_SESSION = [];
+    session_destroy();
+    session_start();
+}
+$_SESSION['last_activity'] = time();
+
+// Generate CSRF token if not exists (for new sessions)
+if (empty($_SESSION['csrf_token'])) {
+    \App\Helpers\Csrf::generate();
 }
 
 header('X-Frame-Options: SAMEORIGIN');
 header('X-Content-Type-Options: nosniff');
 header('X-XSS-Protection: 1; mode=block');
 header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+
+header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';");
+header("Permissions-Policy: geolocation=(), microphone=(), camera=(), fullscreen=(self), payment=();");
+
+// Remove PHP version disclosure
+header_remove('X-Powered-By');
+
 
 \App\Models\Database::getInstance();
+
+// Global Exception Handler
+set_exception_handler(function (\Throwable $e) {
+    $isProduction = env('APP_ENV') === 'production';
+    $logEntry = [
+        'timestamp' => date('Y-m-d H:i:s'),
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTraceAsString()
+    ];
+    $logDir = BASE_PATH . '/storage/logs';
+    if (!is_dir($logDir)) {
+        mkdir($logDir, 0755, true);
+    }
+    error_log(json_encode($logEntry) . PHP_EOL, 3, $logDir . '/error.log');
+
+    if ($isProduction) {
+        http_response_code(500);
+        // Include generic error view if exists
+        $errorView = VIEWS_PATH . '/errors/500.php';
+        if (file_exists($errorView)) {
+            require $errorView;
+        } else {
+            echo '<h1>Internal Server Error</h1><p>Something went wrong. Please try again later.</p>';
+        }
+    } else {
+        // Development: show detailed error
+        echo '<h1>' . htmlspecialchars(get_class($e)) . '</h1>';
+        echo '<p><strong>Message:</strong> ' . htmlspecialchars($e->getMessage()) . '</p>';
+        echo '<p><strong>File:</strong> ' . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . '</p>';
+        echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
+    }
+});

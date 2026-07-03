@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  bayu-cctv:
+    build: .
+    container_name: bayu-cctv
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./storage:/var/www/html/storage
+      - ./public/uploads:/var/www/html/public/uploads
+      - ./.env:/var/www/html/.env:ro
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+    networks:
+      - cctv-network
+
+networks:
+  cctv-network:
+    driver: bridge
