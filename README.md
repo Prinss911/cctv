@@ -16,6 +16,11 @@ Website company profile profesional untuk jasa pemasangan CCTV, dibangun dengan 
 - **Upload Gambar** — Validasi MIME type, batas ukuran 5MB, nama file diacak untuk keamanan
 - **SEO Ready** — Meta title, meta description, Open Graph image, dan favicon semua dapat dikonfigurasi dari admin panel
 - **Keamanan Bawaan** — CSRF protection, bcrypt password hashing, rate limiting login, prepared statements, security headers
+- **Brand Logo CRUD** — Kelola logo brand/klien korporat dengan upload file, tampil di tab pricing halaman utama
+- **RBAC Authorization** — Tiga level akses: admin, editor, viewer, dicek via middleware di setiap route admin
+- **Security Event Logging** — Semua event keamanan tercatat di `storage/logs/security.log` dengan detail terstruktur
+- **Dynamic Base URL** — Otomatis deteksi protokol, host, dan port, support proxy/CDN (Cloudflare, nginx)
+- **Docker Support** — Production-ready Docker image dengan PHP 8.2 + Apache + SQLite3, entrypoint auto-migration
 - **Sistem Migrasi** — Skrip migrasi dengan dukungan `--fresh` dan `--seed`
 
 ---
@@ -30,8 +35,9 @@ Website company profile profesional untuk jasa pemasangan CCTV, dibangun dengan 
 | Icon | Font Awesome 6.5.1 |
 | Drag-and-drop | SortableJS |
 | Tema | Bootstrap `data-bs-theme` + `localStorage` |
-| Web Server (dev) | PHP Built-in Server |
-| Web Server (prod) | Apache (mod_rewrite) / Nginx |
+| Container Runtime | Docker & Docker Compose |
+| Web Server (dev) | PHP Built-in Server / Docker |
+| Web Server (prod) | Apache (mod_rewrite) / Nginx / Docker |
 
 ---
 
@@ -43,16 +49,49 @@ Website company profile profesional untuk jasa pemasangan CCTV, dibangun dengan 
 - Ekstensi `sqlite3` (sudah termasuk di PHP secara default)
 - Untuk MySQL: ekstensi `pdo_mysql`
 - Untuk PostgreSQL: ekstensi `pdo_pgsql`
+- **Docker:** Docker Engine 20+ & Docker Compose (untuk containerized deployment)
 
 ---
 
 ## Instalasi
 
+### Opsi A — Docker (Direkomendasikan)
+
+Jalankan aplikasi dalam container tanpa perlu setup PHP/SQLite di host:
+
+```bash
+# 1. Clone repository
+git clone https://github.com/Prinss911/cctv.git
+cd cctv
+
+# 2. Salin file konfigurasi
+cp .env.example .env
+
+# 3. Build dan jalankan container
+docker compose up -d --build
+
+# 4. Buka di browser
+# Halaman Utama: http://localhost:8081
+# Admin Panel:  http://localhost:8081/admin
+```
+
+Container akan secara otomatis:
+- Menjalankan migrasi database saat pertama kali start (`php database/migrate.php --seed`)
+- Mount folder `storage/` dan `public/uploads/` untuk persistensi data
+- Menggunakan konfigurasi dari file `.env` (read-only mount)
+
+Untuk menghentikan container:
+```bash
+docker compose down
+```
+
+### Opsi B — Manual (PHP Native)
+
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/username/bayu-cctv.git
-cd bayu-cctv
+git clone https://github.com/Prinss911/cctv.git
+cd cctv
 ```
 
 ### 2. Salin File Konfigurasi
@@ -67,7 +106,7 @@ Buka `.env` dan sesuaikan nilainya:
 
 ```env
 APP_NAME="Bayu CCTV"
-APP_URL=http://localhost:8000
+APP_URL=http://localhost:8081
 APP_ENV=development
 APP_DEBUG=true
 
@@ -92,13 +131,15 @@ Perintah ini akan membuat semua tabel dan mengisi data awal (termasuk akun admin
 ### 5. Jalankan Development Server
 
 ```bash
-php -S localhost:8000 -t public
+php -S 0.0.0.0:8081 -t public
 ```
+
+> **Catatan:** Port 8081 digunakan agar kompatibel dengan Docker dan menghindari konflik. Untuk akses dari perangkat lain di jaringan yang sama, gunakan IP lokal host (contoh: `http://192.168.x.x:8081`).
 
 ### 6. Buka di Browser
 
-- **Halaman Utama:** [http://localhost:8000](http://localhost:8000)
-- **Admin Panel:** [http://localhost:8000/admin](http://localhost:8000/admin)
+- **Halaman Utama:** [http://localhost:8081](http://localhost:8081)
+- **Admin Panel:** [http://localhost:8081/admin](http://localhost:8081/admin)
 
 ---
 
@@ -122,13 +163,14 @@ bayu-cctv/
 |   |-- Controllers/            # Controller halaman
 |   |   |-- Admin/              # Controller khusus admin panel
 |   |   |   |-- AuthController.php
+|   |   |   |-- BrandController.php     # CRUD logo brand/klien
 |   |   |   |-- DashboardController.php
-|   |   |   |-- SliderController.php
 |   |   |   |-- GalleryController.php
 |   |   |   |-- PricingController.php
+|   |   |   |-- SettingsController.php
+|   |   |   |-- SliderController.php
 |   |   |   |-- TestimonialController.php
-|   |   |   |-- ClientController.php
-|   |   |   `-- SettingsController.php
+|   |   |   `-- ClientController.php
 |   |   `-- HomeController.php  # Controller halaman publik
 |   |-- Helpers/                # Class helper / utility
 |   |   |-- Auth.php            # Autentikasi & rate limiting
@@ -138,8 +180,10 @@ bayu-cctv/
 |   |   |-- Upload.php          # Upload & validasi file
 |   |   `-- View.php            # Render template & layout
 |   |-- Middleware/
-|   |   |-- AuthMiddleware.php  # Cek sesi login
-|   |   `-- CsrfMiddleware.php  # Verifikasi token CSRF
+|   |   |-- AuthMiddleware.php      # Cek sesi login
+|   |   |-- CsrfMiddleware.php      # Verifikasi token CSRF
+|   |   |-- IdleTimeoutMiddleware.php # Auto-logout 30 menit inaktif
+|   |   `-- RbacMiddleware.php       # Kontrol akses berbasis role
 |   `-- Models/
 |       |-- Database.php        # Singleton koneksi PDO
 |       |-- BaseModel.php       # CRUD abstrak
@@ -147,6 +191,7 @@ bayu-cctv/
 |       |-- SettingModel.php
 |       |-- SliderModel.php
 |       |-- PricingModel.php
+|       |-- PricingBrandModel.php  # Brand logo untuk tab pricing
 |       |-- GalleryModel.php
 |       |-- TestimonialModel.php
 |       `-- ClientModel.php
@@ -169,7 +214,8 @@ bayu-cctv/
 |   |   |-- 004_create_pricing.php
 |   |   |-- 005_create_gallery.php
 |   |   |-- 006_create_testimonials.php
-|   |   `-- 007_create_clients.php
+|   |   |-- 007_create_clients.php
+|   |   `-- 008_create_pricing_brands.php
 |   `-- seeds/
 |       `-- DatabaseSeeder.php  # Data awal untuk development
 |
@@ -206,13 +252,17 @@ bayu-cctv/
 |       |   `-- index.php       # Halaman utama
 |       `-- admin/              # View per modul admin
 |           |-- login.php
+|           |-- brand/             # CRUD logo brand/klien
+|           |   |-- create.php
+|           |   |-- edit.php
+|           |   `-- index.php
 |           |-- dashboard.php
-|           |-- sliders/
 |           |-- gallery/
+|           |-- login.php
 |           |-- pricing/
-|           |-- testimonials/
-|           |-- clients/
-|           `-- settings/
+|           |-- settings/
+|           |-- sliders/
+|           `-- testimonials/
 |
 |-- routes/
 |   |-- web.php                 # Rute halaman publik
@@ -222,11 +272,14 @@ bayu-cctv/
 |   |-- db/
 |   |   `-- app.db              # File database SQLite
 |   |-- cache/                  # (Reservasi untuk cache di masa depan)
-|   `-- logs/                   # (Reservasi untuk log di masa depan)
+|   `-- logs/                   # Security event log & error log
 |
+|-- .dockerignore               # File yang diabaikan Docker build
 |-- .env                        # Konfigurasi environment (tidak di-commit)
 |-- .env.example                # Template konfigurasi environment
-`-- .gitignore
+|-- .gitignore
+|-- Dockerfile                  # Production Docker image (PHP 8.2 + Apache)
+`-- docker-compose.yml          # Container orchestration
 ```
 
 ---
@@ -260,9 +313,17 @@ Upload foto-foto hasil pemasangan CCTV. Setiap item memiliki caption dan dapat d
 
 Kelola ulasan pelanggan. Setiap testimoni memiliki nama pelanggan, isi ulasan, dan rating bintang (1-5).
 
+### Brand / Client Logo
+
+Kelola logo brand/klien korporat yang tampil di tab navigasi bagian pricing halaman utama. Modul terpisah dari "Client / Mitra" (yang tampil di bagian logo klien footer).
+- Nama brand dan file logo (upload)
+- Logo disimpan di `public/uploads/logo/` dengan format JPEG/PNG/WebP/GIF, max 5MB
+- Tampil sebagai tab filter di bagian pricing halaman utama
+- Setiap brand bisa dikaitkan ke paket harga tertentu
+
 ### Client / Mitra
 
-Tampilkan logo-logo brand atau klien korporat. Setiap item memiliki nama, logo, dan opsional link ke website.
+Tampilkan logo-logo klien yang muncul di bagian "Klien Kami" halaman utama (footer/client section). Setiap item memiliki nama, logo, dan opsional link ke website.
 
 ### Pengaturan
 
@@ -368,6 +429,47 @@ php database/migrate.php --fresh --seed
 
 ## Deployment
 
+### Docker Deployment
+
+Deploy dengan Docker di VPS/server mana pun yang memiliki Docker Engine:
+
+```bash
+# Clone repository
+git clone https://github.com/Prinss911/cctv.git /opt/bayu-cctv
+cd /opt/bayu-cctv
+
+# Salin dan sesuaikan konfigurasi
+cp .env.example .env
+# Edit .env: set APP_URL, APP_ENV=production, APP_DEBUG=false
+
+# Build dan jalankan
+docker compose up -d --build
+```
+
+Aplikasi akan berjalan di port **8081**. Untuk menggunakan port 80, edit `docker-compose.yml`:
+```yaml
+ports:
+  - "80:80"   # ganti 8081:80 jadi 80:80
+```
+
+Atau gunakan reverse proxy (Nginx) di host:
+```nginx
+server {
+    listen 80;
+    server_name domain-anda.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8081;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Data persisten (database SQLite + uploads) tersimpan di `./storage/` dan `./public/uploads/` — aman selama volume mount tidak dihapus.
+
 ### Shared Hosting (cPanel)
 
 1. Upload seluruh file ke server (misalnya ke `/home/username/bayu-cctv/`)
@@ -393,7 +495,7 @@ php database/migrate.php --fresh --seed
 
 1. Clone repository:
    ```bash
-   git clone https://github.com/username/bayu-cctv.git /var/www/bayu-cctv
+   git clone https://github.com/Prinss911/cctv.git /var/www/bayu-cctv
    ```
 
 2. Konfigurasi virtual host Nginx atau Apache untuk mengarah ke `/var/www/bayu-cctv/public`
@@ -444,16 +546,23 @@ Fitur keamanan yang sudah dibangun ke dalam aplikasi:
 
 | Fitur | Implementasi |
 |---|---|
-| CSRF Protection | Token acak 64-char hex per sesi, dirotasi setelah setiap POST request |
-| Password Hashing | `password_hash()` dengan algoritma bcrypt, cost factor 12 |
-| Rate Limiting | Akun terkunci 15 menit setelah 5 kali gagal login |
-| SQL Injection | Seluruh query menggunakan PDO prepared statements |
-| Upload Validation | Validasi MIME type via `finfo` (bukan ekstensi), batas ukuran 5MB |
+| Banned Extension Check | Upload menolak file dengan ekstensi berbahaya (`.php`, `.pht`, `.phtml`, `.php4`, `.php5`, `.phar`, `.htaccess`, `.htpasswd`, `.shtml`, `.inc`) |
+| CSRF Protection | Token acak 64-char hex per sesi, dirotasi setelah POST halaman penuh; AJAX request dilindungi via fallback validasi token sebelumnya |
 | Filename Sanitization | Nama file diacak dengan `uniqid() + time()`, ekstensi diambil dari MIME type |
-| Security Headers | `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy` dikirim di setiap response |
-| XSS Output Escaping | Fungsi `e()` (`htmlspecialchars`) digunakan di seluruh view |
-| Session Security | `session_regenerate_id(true)` dipanggil saat login berhasil |
+| Idle Timeout | Session otomatis logout setelah 30 menit tidak ada aktivitas, dengan flash message notifikasi |
+| Image Content Integrity | Validasi gambar via `getimagesize()` selain MIME type check; dimensi maksimal 4000x4000 piksel |
+| Password Hashing | `password_hash()` dengan algoritma bcrypt, cost factor 12 |
+| Path Traversal Protection | `Upload::sanitizePath()` memfilter null bytes, `../`, `./`, absolute paths; hanya alphanumeric/underscore/hyphen/dot diizinkan; path final diverifikasi via realpath() |
+| Rate Limiting | 5 gagal login → lock 15 menit; counter disimpan di tabel `auth_attempts` dengan SQLite `EXCLUSIVE` transaction untuk atomic increment; tracking per IP dan per username |
+| RBAC Authorization | Tiga level role: `admin` (penuh), `editor` (CRUD konten), `viewer` (read-only). Dicek via `RbacMiddleware` di setiap route admin |
+| Security Event Logging | Semua event keamanan dicatat ke `storage/logs/security.log`: login gagal/berhasil, upload, akses tidak sah, CSRF violation, path traversal, role violation |
+| Security Headers | `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Content-Security-Policy` dikirim di setiap response |
+| Session Security | `session_regenerate_id(true)` dipanggil saat login berhasil; session fixation prevention |
+| SQL Injection | Seluruh query menggunakan PDO prepared statements |
 | Storage Protection | `storage/.htaccess` memblokir akses langsung ke file di folder storage |
+| Thumbnail Generation | Upload gambar otomatis menghasilkan thumbnail 400/800/1200/1600 px via GD library |
+| Upload Validation | Validasi MIME type via `finfo` (bukan ekstensi), batas ukuran 5MB, MIME-extension consistency check |
+| XSS Output Escaping | Fungsi `e()` (`htmlspecialchars`) digunakan di seluruh view; JSON-LD di-escape dengan flags JSON_HEX_TAG, JSON_HEX_AMP, JSON_HEX_APOS, JSON_HEX_QUOT |
 
 ---
 

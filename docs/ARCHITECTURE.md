@@ -20,8 +20,11 @@ Aplikasi ini menggunakan arsitektur **MVC-like** (Model-View-Controller) yang di
                     └──────────────────────────────────┬────────┘
                                                        │
                     ┌──────────────────────────────────▼───────┐
-                    │              Middleware                    │
-                    │   AuthMiddleware + CsrfMiddleware         │
+                     │              Middleware Chain               │
+                     │   AuthMiddleware                         │
+                     │   → IdleTimeoutMiddleware (30 mnt)       │
+                     │   → RbacMiddleware (cek role)            │
+                     │   → CsrfMiddleware (validasi POST)       │
                     └──────────────────────────────────┬────────┘
                                                        │
                ┌───────────────────────────────────────▼───────┐
@@ -64,7 +67,7 @@ Berikut alur lengkap sebuah request dari browser hingga response:
    - Menginisialisasi koneksi database via `Database::getInstance()`
 4. **`public/index.php`** membuat instance `Router`, memuat `routes/web.php` dan `routes/admin.php`
 5. **`Router::dispatch()`** menerima `$_SERVER['REQUEST_METHOD']` dan `$_SERVER['REQUEST_URI']`, mencocokkan dengan daftar route yang terdaftar
-6. **Middleware** dijalankan di dalam constructor controller (admin) — `AuthMiddleware::handle()` dan `CsrfMiddleware::handle()`
+6. **Middleware** dijalankan di dalam constructor controller (admin) dalam urutan berikut: `AuthMiddleware::handle()` (cek login) → `IdleTimeoutMiddleware::handle()` (cek aktivitas) → `RbacMiddleware::handle()` (cek role) → `CsrfMiddleware::handle()` (cek token POST)
 7. **Controller method** dipanggil dengan parameter URL yang sudah di-extract (misalnya `{id}`)
 8. **Model** digunakan oleh controller untuk query database via PDO
 9. **`View::render()`** menjalankan template view dengan output buffering, menangkap hasilnya ke `$content`, lalu menyertakan file layout yang membungkus `$content`
@@ -127,13 +130,14 @@ Router otomatis meng-prefix namespace `App\Controllers\`, sehingga `Admin\Slider
 
 Semua admin controller memanggil middleware di constructor:
 
-```php
-public function __construct()
-{
-    AuthMiddleware::handle();   // redirect ke /admin/login jika belum login
-    CsrfMiddleware::handle();   // verifikasi token CSRF untuk setiap POST request
-}
-```
+**Middleware yang tersedia (urutan eksekusi per request):**
+
+| Middleware | File | Fungsi |
+|---|---|---|
+| `AuthMiddleware` | `app/Middleware/AuthMiddleware.php` | Memastikan pengguna sudah login. Cek `$_SESSION['user_id']`, jika tidak ada redirect ke `/admin/login` |
+| `IdleTimeoutMiddleware` | `app/Middleware/IdleTimeoutMiddleware.php` | Cek idle timeout (default 30 menit). Jika `last_activity` > timeout, hapus session dan redirect ke login dengan flash message. Update `last_activity` setiap request valid |
+| `RbacMiddleware` | `app/Middleware/RbacMiddleware.php` | Verifikasi role-based access. Baca `users.role` dari session, cocokkan dengan `$requiredRole` per route. Role: `admin` (penuh), `editor` (CRUD konten), `viewer` (read-only). Jika role tidak memenuhi, tampilkan 403 |
+| `CsrfMiddleware` | `app/Middleware/CsrfMiddleware.php` | Verifikasi token CSRF pada POST request. Token dirotasi hanya untuk full page POST (bukan AJAX). Fallback validasi ke token sebelumnya untuk kompatibilitas AJAX |
 
 ### Pola CRUD Standar
 
@@ -270,11 +274,12 @@ File partial disimpan di `resources/views/partials/`.
 
 | Helper | Namespace | Fungsi Utama |
 |---|---|---|
-| `Auth` | `App\Helpers\Auth` | `attempt()` login dengan rate limiting, `check()` cek sesi, `user()` ambil data user sesi, `logout()` hapus sesi |
-| `Csrf` | `App\Helpers\Csrf` | `token()` buat/ambil token, `field()` hasilkan input hidden HTML, `verify()` validasi token POST dan rotasi |
+| `Auth` | `App\Helpers\Auth` | `attempt()` login dengan rate limiting (atomic SQLite transaction), `check()` cek sesi, `user()` ambil data user sesi, `logout()` hapus sesi, `hasRole()` cek role user, `requireRole()` abort jika role tidak cocok |
+| `Csrf` | `App\Helpers\Csrf` | `token()` buat/ambil token, `field()` hasilkan input hidden HTML, `verify()` validasi token POST dengan fallback token sebelumnya untuk AJAX |
 | `Flash` | `App\Helpers\Flash` | `set(type, message)` simpan pesan ke sesi, `get()` ambil dan hapus pesan, `has()` cek keberadaan |
 | `Router` | `App\Helpers\Router` | `get()`, `post()` daftarkan route, `dispatch()` cocokkan dan jalankan handler |
-| `Upload` | `App\Helpers\Upload` | `handle(file, directory)` validasi dan simpan file upload, `delete(path)` hapus file |
+| `Upload` | `App\Helpers\Upload` | `handle(file, directory)` validasi berlapis + simpan file, `delete(path)` hapus file dengan path traversal protection, `sanitizePath()` filter path berbahaya, `generateThumbnails()` buat 4 ukuran thumbnail via GD |
+| `SecurityLogger` | `App\Helpers\SecurityLogger` | `logLogin()` login gagal/berhasil, `logUpload()` upload attempt, `logAccess()` akses tidak sah, `logCsrf()` CSRF violation, `logPathTraversal()` path traversal attempt, `logRole()` role violation |
 | `View` | `App\Helpers\View` | `render(template, data, layout)` render view dengan layout, `partial(name, data)` render partial |
 
 ### Helper Global (bootstrap/app.php)
@@ -386,22 +391,27 @@ Urutan numerik penting karena runner mengurutkan file secara alfabetis.
 
 ---
 
-## Authentication & Security
-
 ### Alur Autentikasi
 
 ```
 1. User POST /admin/login (email + password + _csrf token)
 2. CsrfMiddleware::handle() -> verifikasi token CSRF
 3. Auth::attempt(email, password):
-   a. Cek apakah akun sedang terkunci (rate limit)
-   b. Query UserModel::findByEmail()
-   c. password_verify() cocokkan password dengan hash bcrypt
-   d. Jika gagal: increment $_SESSION['login_attempts']
-      -> jika >= 5: set $_SESSION['login_locked_until'] = now + 900 detik
-   e. Jika berhasil:
+   a. Cek status akun: jika is_active = 0, tolak login
+   b. Cek rate limit dengan SQLite EXCLUSIVE transaction:
+      - Query tabel auth_attempts untuk IP + username dalam 15 menit terakhir
+      - Jika count >= 5: return 'locked' (tanpa increment)
+   c. Query UserModel::findByEmail()
+   d. password_verify() cocokkan password dengan hash bcrypt (cost 12)
+   e. Jika gagal:
+      - INSERT ke auth_attempts (ip_address, username, created_at)
+      - COMMIT transaction
+      - return false
+   f. Jika berhasil:
+      -> Hapus semua auth_attempts untuk IP + username ini
       -> session_regenerate_id(true)  // cegah session fixation
-      -> simpan user_id, user_name, user_email, user_role ke $_SESSION
+      -> simpan user_id, user_name, user_email, user_role, user_id_original ke $_SESSION
+      -> Set last_activity timestamp untuk idle timeout
 4. redirect('/admin')
 ```
 
@@ -410,34 +420,64 @@ Urutan numerik penting karena runner mengurutkan file secara alfabetis.
 ```
 1. Saat render form: Csrf::field() hasilkan <input type="hidden" name="_csrf" value="TOKEN">
    -> Token dibuat dengan bin2hex(random_bytes(32)) dan disimpan di $_SESSION['csrf_token']
+   -> Token juga disalin ke $_SESSION['csrf_token_prev'] untuk fallback AJAX
 2. Saat form di-submit (POST):
    -> CsrfMiddleware::handle() memanggil Csrf::verify()
-   -> Csrf::verify() bandingkan $_POST['_csrf'] dengan $_SESSION['csrf_token'] menggunakan hash_equals()
-   -> Jika tidak cocok: HTTP 403 dan die()
-   -> Jika cocok: rotasi token (generate baru)
+   -> Csrf::verify() bandingkan $_POST['_csrf'] dengan:
+      a. $_SESSION['csrf_token'] (token saat ini) menggunakan hash_equals() -> jika cocok: lanjut
+      b. Jika a gagal: bandingkan dengan $_SESSION['csrf_token_prev'] (token sebelumnya) -> jika cocok: lanjut
+      c. Jika keduanya gagal: HTTP 403 dan die()
+   -> Jika matched dengan token saat ini (a) DAN request bukan AJAX: rotasi token
+      (generate baru, simpan yang lama ke csrf_token_prev)
+   -> Jika matched dengan token lama (b): lanjutkan tanpa rotasi (untuk AJAX)
 ```
 
 `hash_equals()` digunakan sebagai ganti `===` untuk mencegah timing attack.
+Token hanya dirotasi pada POST request halaman penuh (bukan fetch/XHR) untuk menjaga kompatibilitas dengan AJAX request yang dikirim bersamaan.
+
 
 ### Rate Limiting Login
 
-Implementasi berbasis sesi (tidak memerlukan database atau cache tambahan):
+Implementasi berbasis database table `auth_attempts` dengan SQLite EXCLUSIVE transaction untuk atomic increment:
 
-- Counter disimpan di `$_SESSION['login_attempts']`
-- Setelah 5 kali gagal: `$_SESSION['login_locked_until'] = time() + 900` (15 menit)
-- Saat akun terkunci, `Auth::attempt()` langsung return `false` tanpa query database
-- Login berhasil me-reset counter ke 0 dan menghapus `login_locked_until`
+- Struktur tabel: `id INTEGER PRIMARY KEY`, `ip_address TEXT`, `username TEXT`, `created_at TEXT`
+- Saat login gagal: `INSERT INTO auth_attempts (ip_address, username, created_at) VALUES (?, ?, datetime('now'))`
+- Sebelum login: `SELECT COUNT(*) FROM auth_attempts WHERE (ip_address = ? OR username = ?) AND created_at > datetime('now', '-15 minutes')`
+- Jika count >= 5: akun terkunci, `Auth::attempt()` langsung return `'locked'`
+- Seluruh operasi (count + insert) dibungkus dalam `BEGIN EXCLUSIVE TRANSACTION` / `COMMIT` untuk mencegah race condition pada concurrent request
+- Login berhasil: `DELETE FROM auth_attempts WHERE ip_address = ? OR username = ?`
+- Tracking per IP dan per username (jika attacker ganti IP, username tetap terblokir; jika ganti username, IP tetap terblokir)
 
 ### Upload Security
 
-`App\Helpers\Upload::handle()` melakukan validasi berlapis:
+`App\Helpers\Upload::handle()` melakukan validasi berlapis (10 lapis):
 
-1. Cek `$file['error'] === UPLOAD_ERR_OK`
-2. Buka file dengan `finfo_open(FILEINFO_MIME_TYPE)` — baca magic bytes file, bukan ekstensi
-3. Cocokkan MIME type dengan whitelist: `image/jpeg`, `image/png`, `image/webp`, `image/gif`
-4. Cek ukuran file tidak melebihi `config/storage.php` `max_size` (default 5MB)
-5. Generate nama file baru: `uniqid() . '_' . time() . '.' . $ext` — nama asli dari pengguna diabaikan
-6. Ekstensi diambil dari MIME type (bukan dari nama file asli)
+1. Cek `$file['error'] === UPLOAD_ERR_OK` dengan switch untuk semua kode error
+2. Validasi file benar-benar hasil upload (`is_uploaded_file()`) — bukan file lokal yang diinjeksi
+3. Buka file dengan `finfo_open(FILEINFO_MIME_TYPE)` — baca magic bytes file, bukan ekstensi
+4. Cocokkan MIME type dengan whitelist: `image/jpeg`, `image/png`, `image/webp`, `image/gif`
+5. **MIME-Extension Consistency Check** — Validasi bahwa ekstensi file asli cocok dengan MIME type hasil `finfo`
+6. Cek ukuran file tidak melebihi `config/storage.php` `max_size` (default 5MB) dan minimum 1 byte
+7. **Banned Extension Check** — Tolak ekstensi berbahaya: `.php`, `.pht`, `.phtml`, `.php4`, `.php5`, `.phar`, `.htaccess`, `.htpasswd`, `.shtml`, `.inc`
+8. **Image Content Integrity** — Untuk file gambar, panggil `getimagesize()` untuk memverifikasi file benar-benar gambar yang valid
+9. **Image Dimension Limit** — Tolak upload jika dimensi > 4000x4000 piksel (`Upload::MAX_IMAGE_DIMENSION`)
+10. Generate nama file baru: `uniqid() . '_' . time() . '.' . $ext`
+
+**Validasi path di Upload::handle() dan Upload::delete():**
+- `sanitizePath()` memvalidasi path input terhadap: null bytes, directory traversal, absolute paths, karakter tidak aman
+- `realpath()` + `strpos()` memastikan path final di dalam direktori uploads
+
+**Thumbnail Generation:**
+- Jika GD atau Imagick tersedia, upload gambar otomatis menghasilkan 4 ukuran thumbnail: 400, 800, 1200, 1600 px
+- Thumbnail disimpan sebagai `filename_{width}.ext` di direktori yang sama
+- Format output mengikuti format asli (JPEG quality 85, PNG compression 9, WebP quality 80)
+- Transparency dipertahankan untuk PNG dan GIF
+
+## Known Limitations
+
+### Admin Panel UI
+- Tidak mendukung real-time updates (harus refresh halaman).
+- RBAC sudah diimplementasikan, namun tampilan UI belum sepenuhnya adaptif terhadap role yang berbeda.
 
 ---
 
@@ -760,6 +800,18 @@ Autoloader terdapat di `bootstrap/autoload.php` menggunakan `spl_autoload_regist
 | POST | `/admin/clients/{id}` | `Admin\ClientController@update` | Update klien |
 | POST | `/admin/clients/{id}/delete` | `Admin\ClientController@destroy` | Hapus klien |
 | POST | `/admin/clients/reorder` | `Admin\ClientController@reorder` | Simpan urutan |
+
+### Admin — Brand Logo
+
+| Method | URI | Controller@Method | Keterangan |
+|---|---|---|---|
+| GET | `/admin/brand` | `Admin\BrandController@index` | Daftar brand |
+| GET | `/admin/brand/create` | `Admin\BrandController@create` | Form tambah brand |
+| POST | `/admin/brand` | `Admin\BrandController@store` | Simpan brand baru (upload logo) |
+| GET | `/admin/brand/{id}/edit` | `Admin\BrandController@edit` | Form edit brand |
+| POST | `/admin/brand/{id}` | `Admin\BrandController@update` | Update brand (upload logo baru) |
+| POST | `/admin/brand/{id}/delete` | `Admin\BrandController@destroy` | Hapus brand + file logo |
+| POST | `/admin/brand/reorder` | `Admin\BrandController@reorder` | Simpan urutan |
 
 ### Admin — Pengaturan
 
