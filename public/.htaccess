@@ -7,3 +7,22 @@ RewriteRule ^(.*)$ index.php [QSA,L]
 <FilesMatch "^\.">
     Require all denied
 </FilesMatch>
+
+# Security headers for uploaded files
+<IfModule mod_headers.c>
+    # Prevent MIME-type sniffing
+    Header set X-Content-Type-Options "nosniff"
+    
+    # Prevent iframe embedding
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Content-Disposition policy for images - inline display only
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+        Header set Content-Disposition "inline"
+    </FilesMatch>
+    
+    # Force download for other files
+    <FilesMatch "\.(pdf|doc|docx|xls|xlsx|zip|rar|7z)$">
+        Header set Content-Disposition "attachment"
+    </FilesMatch>
+</IfModule>

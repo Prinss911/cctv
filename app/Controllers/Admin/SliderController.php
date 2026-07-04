@@ -1,10 +1,11 @@
 <?php
-
 namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\SliderModel;
-use App\Helpers\{View, Flash, Csrf, Upload};
+use App\Helpers\{View, Flash, Csrf, Upload, Request};
+use function trim;
+use function array_filter;
 
 class SliderController
 {
@@ -30,24 +31,28 @@ class SliderController
     public function store(): void
     {
         Csrf::verify();
-        $image = Upload::handle($_FILES['image'] ?? [], 'sliders');
-        if (!$image) {
-            Flash::set('error', 'Gambar wajib diupload.');
+        $result = Upload::handle(Request::file('image'), 'sliders');
+        
+        if (isset($result['error'])) {
+            Flash::set('error', $result['error']);
             redirect('/admin/sliders/create');
+            exit;
         }
 
         $this->model->create([
-            'title'       => trim($_POST['title'] ?? ''),
-            'subtitle'    => trim($_POST['subtitle'] ?? ''),
-            'image'       => $image,
-            'button_text' => trim($_POST['button_text'] ?? 'Hubungi Kami'),
-            'button_url'  => trim($_POST['button_url'] ?? '#'),
-            'sort_order'  => (int)($_POST['sort_order'] ?? 0),
-            'is_active'   => isset($_POST['is_active']) ? 1 : 0,
+            'title'       => trim(Request::post('title', '')),
+            'subtitle'    => trim(Request::post('subtitle', '')),
+            'tag'          => trim(Request::post('tag', 'Keamanan Terpercaya')),
+            'image'       => $result['path'],
+            'button_text' => trim(Request::post('button_text', 'Hubungi Kami')),
+            'button_url'  => trim(Request::post('button_url', '#')),
+            'sort_order'  => (int)Request::post('sort_order', 0),
+            'is_active'   => Request::has('is_active') ? 1 : 0,
         ]);
 
         Flash::set('success', 'Slider berhasil ditambahkan.');
         redirect('/admin/sliders');
+        exit;
     }
 
     public function edit(string $id): void
@@ -64,40 +69,92 @@ class SliderController
     {
         Csrf::verify();
         $data = [
-            'title'       => trim($_POST['title'] ?? ''),
-            'subtitle'    => trim($_POST['subtitle'] ?? ''),
-            'button_text' => trim($_POST['button_text'] ?? 'Hubungi Kami'),
-            'button_url'  => trim($_POST['button_url'] ?? '#'),
-            'sort_order'  => (int)($_POST['sort_order'] ?? 0),
-            'is_active'   => isset($_POST['is_active']) ? 1 : 0,
+            'title'       => trim(Request::post('title', '')),
+            'subtitle'    => trim(Request::post('subtitle', '')),
+            'tag'          => trim(Request::post('tag', 'Keamanan Terpercaya')),
+            'button_text' => trim(Request::post('button_text', 'Hubungi Kami')),
+            'button_url'  => trim(Request::post('button_url', '#')),
+            'sort_order'  => (int)Request::post('sort_order', 0),
+            'is_active'   => Request::has('is_active') ? 1 : 0,
         ];
 
-        if (!empty($_FILES['image']['name'])) {
-            $image = Upload::handle($_FILES['image'], 'sliders');
-            if ($image) {
+        if (!empty(Request::file('image')['name'] ?? '')) {
+            $result = Upload::handle(Request::file('image'), 'sliders');
+            if (isset($result['path'])) {
                 $old = $this->model->find((int)$id);
                 if ($old && $old['image']) Upload::delete($old['image']);
-                $data['image'] = $image;
+                $data['image'] = $result['path'];
+            } elseif (isset($result['error'])) {
+                Flash::set('error', $result['error']);
+                redirect('/admin/sliders/edit/' . $id);
+                exit;
             }
         }
 
         $this->model->update((int)$id, $data);
         Flash::set('success', 'Slider berhasil diperbarui.');
         redirect('/admin/sliders');
+        exit;
     }
 
     public function destroy(string $id): void
     {
         Csrf::verify();
         $item = $this->model->find((int)$id);
-        if ($item && $item['image']) Upload::delete($item['image']);
-        $this->model->delete((int)$id);
-        Flash::set('success', 'Slider berhasil dihapus.');
+        if (!$item) {
+            Flash::set('error', 'Slider tidak ditemukan.');
+            redirect('/admin/sliders');
+            return;
+        }
+
+        // Begin transaction
+        $db = Database::getInstance();
+        $db->beginTransaction();
+
+        try {
+            // Delete from database first
+            $result = $this->model->delete((int)$id);
+
+            if ($result) {
+                // Commit transaction
+                $db->commit();
+
+                // Delete image file if exists (after successful DB commit)
+                if ($item['image']) {
+                    try {
+                        Upload::delete($item['image']);
+                    } catch (Exception $e) {
+                        // Log file deletion error but don't affect transaction outcome
+                        if (env('APP_DEBUG', false)) {
+                            error_log('SliderController::destroy file deletion error: ' . $e->getMessage());
+                        }
+                        // Note: file orphan is acceptable as per requirement
+                    }
+                }
+
+                Flash::set('success', 'Slider berhasil dihapus.');
+            } else {
+                // Delete failed, rollback
+                $db->rollBack();
+                Flash::set('error', 'Gagal menghapus slider.');
+            }
+        } catch (Exception $e) {
+            // Rollback on any exception
+            $db->rollBack();
+            Flash::set('error', 'Terjadi kesalahan saat menghapus slider.');
+            // Log the error
+            if (env('APP_DEBUG', false)) {
+                error_log('SliderController::destroy error: ' . $e->getMessage());
+            }
+        }
+
         redirect('/admin/sliders');
+        exit;
     }
 
     public function reorder(): void
     {
+        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $this->model->updateSortOrder($ids);
         header('Content-Type: application/json');

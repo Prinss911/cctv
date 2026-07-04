@@ -20,7 +20,7 @@
                     <?php elseif ($setting['type'] === 'textarea'): ?>
                         <textarea class="form-control" name="<?= e($setting['key']) ?>" rows="3"><?= e($setting['value']) ?></textarea>
                     <?php elseif ($setting['type'] === 'boolean'): ?>
-                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="<?= e($setting['key']) ?>" value="1" id="s_<?= e($setting['key']) ?>" <?= $setting['value']?'checked':'' ?>><label class="form-check-label" for="s_<?= e($setting['key']) ?>">Aktif</label></div>
+                        <input type="hidden" name="<?= e($setting['key']) ?>" value="0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="<?= e($setting['key']) ?>" value="1" id="s_<?= e($setting['key']) ?>" <?= $setting['value']?'checked':'' ?>><label class="form-check-label" for="s_<?= e($setting['key']) ?>">Aktif</label></div>
                     <?php else: ?>
                         <input type="text" class="form-control" name="<?= e($setting['key']) ?>" value="<?= e($setting['value']) ?>">
                     <?php endif; ?>

@@ -3,7 +3,6 @@
    ============================================ */
 
 /* ---- Google Fonts Import ---- */
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
 /* ---- Custom Properties ---- */
 :root {
@@ -16,6 +15,8 @@
     --cream: #f5f0eb;
     --warm-white: #faf8f5;
     --warm-gray: #8d8a85;
+    --text-muted: #6b6964;
+    --text-muted-light: #8d8a85;
     --border: #d4cfc8;
     --border-dark: #3a3a3a;
     --font-display: 'DM Serif Display', Georgia, serif;
@@ -32,6 +33,8 @@
     --cream: #141414;
     --warm-white: #1a1a1a;
     --warm-gray: #777;
+    --text-muted: #9ca3af;
+    --text-muted-light: #6b7280;
     --border: #2a2a2a;
     --border-dark: #555;
 }
@@ -129,7 +132,7 @@ a:hover {
 }
 
 .section-desc {
-    color: var(--warm-gray);
+    color: var(--text-muted);
     font-size: 1.05rem;
     max-width: 500px;
     margin-top: 1rem;
@@ -219,7 +222,7 @@ a:hover {
     font-family: var(--font-body);
     font-size: 0.82rem;
     font-weight: 500;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     text-decoration: none;
     padding: 0.5rem 1rem;
     letter-spacing: 0.5px;
@@ -331,6 +334,20 @@ a:hover {
     position: relative;
 }
 
+.hero-slide-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 576px) {
+    .hero-slide-img {
+        aspect-ratio: 16/9;
+    }
+}
+
 .hero-overlay {
     position: absolute;
     inset: 0;
@@ -347,19 +364,24 @@ a:hover {
     background-repeat: repeat;
     pointer-events: none;
     opacity: 0.5;
+    z-index: 1;
 }
 
 .hero-content {
     position: relative;
     z-index: 2;
-    max-width: 680px;
+    max-width: 720px;
+    padding: 2rem 0;
 }
 
 .hero-content h1 {
-    font-size: clamp(2.5rem, 5.5vw, 4rem);
+    font-size: clamp(2rem, 5vw, 4rem);
     color: white;
-    margin-bottom: 1.25rem;
-    line-height: 1.08;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .hero-content p {
@@ -440,8 +462,14 @@ a:hover {
 /* ---- Carousel Controls ---- */
 #heroCarousel,
 #heroCarousel .carousel-inner {
-    max-height: 90vh;
     max-height: 900px;
+    min-height: 550px;
+}
+
+#heroCarousel .carousel-item {
+    min-height: 550px;
+    max-height: 900px;
+    height: 100%;
 }
 
 .carousel-control-prev,
@@ -522,7 +550,7 @@ a:hover {
     font-weight: 600;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     margin-top: 0.5rem;
 }
 
@@ -608,7 +636,7 @@ a:hover {
 
 .feature-text span {
     font-size: 0.85rem;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     line-height: 1.6;
 }
 
@@ -657,7 +685,7 @@ a:hover {
 
 .service-desc {
     font-size: 0.88rem;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     line-height: 1.7;
     margin-bottom: 1.25rem;
 }
@@ -759,7 +787,7 @@ a:hover {
 
 .price-original {
     text-decoration: line-through;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     font-size: 0.85rem;
     display: inline-block;
     margin-right: 0.5rem;
@@ -842,11 +870,6 @@ a:hover {
     color: white;
 }
 
-.price-card.featured .btn-price:hover {
-    background: var(--rust-dark);
-    border-color: var(--rust-dark);
-    color: white;
-}
 .price-card.featured .btn-price:hover {
     background: var(--rust-dark);
     border-color: var(--rust-dark);
@@ -1056,7 +1079,7 @@ a:hover {
 
 .testi-role {
     font-size: 0.78rem;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     display: block;
 }
 
@@ -1110,7 +1133,7 @@ a:hover {
 .client-name {
     font-family: var(--font-display);
     font-size: 0.95rem;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     text-align: center;
     transition: color 0.3s;
 }
@@ -1369,7 +1392,7 @@ textarea.form-control-custom {
     display: none;
     padding: 0 0 1.25rem;
     font-size: 0.9rem;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     line-height: 1.8;
     max-width: 680px;
 }
@@ -1686,7 +1709,7 @@ textarea.form-control-custom {
 /* ---- Utility ---- */
 .text-rust { color: var(--rust) !important; }
 .text-ink { color: var(--ink) !important; }
-.text-muted-warm { color: var(--warm-gray) !important; }
+.text-muted-warm { color: var(--text-muted) !important; }
 .text-green { color: var(--green) !important; }
 .bg-cream { background: var(--cream) !important; }
 .bg-ink { background: var(--ink) !important; }
@@ -1909,40 +1932,42 @@ html {
         padding: 4.5rem 0;
     }
 
-    --section-gap: 4.5rem;
-
     .gallery-grid {
         grid-template-columns: repeat(3, 1fr);
     }
-
+    
     .stats-row {
         grid-template-columns: repeat(3, 1fr);
     }
-
+    
     .about-badge {
         right: 0;
         bottom: -1rem;
     }
-
+    
     .clients-grid {
         grid-template-columns: repeat(3, 1fr);
     }
-
+    
     .client-item:nth-child(4n) {
         border-right: 1px solid var(--border);
     }
-
+    
     .client-item:nth-child(3n) {
         border-right: none;
     }
 }
 
-.hero-slide {
-    height: 100vh;
-    min-height: 500px;
-    max-height: 90vh;
-    max-height: 700px;
-}
+@media (max-width: 991px) {
+    .hero-slide {
+        height: 60vh;
+        min-height: 500px;
+        max-height: 700px;
+    }
+
+    .hero-content {
+        padding: 0 1rem;
+    }
 
     .hero-content h1 {
         font-size: 2rem;
@@ -2071,6 +2096,39 @@ html {
 
     .stat-num {
         font-size: 2.2rem;
+    }
+
+    .hero-content {
+        padding: 1rem 0;
+    }
+    .hero-content h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .hero-content p {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        max-width: 100%;
+    }
+    .hero-content .btn-hero {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.72rem;
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+    .hero-content .d-flex.gap-3 {
+        gap: 0.65rem !important;
+    }
+    .hero-slide {
+        height: 60vh;
+        min-height: 400px;
+        max-height: 550px;
+    }
+    #heroCarousel .carousel-item,
+    #heroCarousel,
+    #heroCarousel .carousel-inner {
+        min-height: 400px;
+        max-height: 550px;
     }
 }
 

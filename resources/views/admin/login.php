@@ -27,6 +27,11 @@
             <button type="submit" class="login-btn">
                 <i class="fas fa-right-to-bracket me-2"></i>Masuk
             </button>
+            <div class="login-text-center mt-3">
+                <a href="<?= url('/admin/forgot-password') ?>" class="text-muted">
+                    <i class="fas fa-key me-1"></i>Lupa Password?
+                </a>
+            </div>
         </form>
     </div>
 </div>

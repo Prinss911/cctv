@@ -12,6 +12,8 @@
     --cream: #f5f0eb;
     --warm-white: #faf8f5;
     --warm-gray: #8d8a85;
+    --text-muted: #6b6964;
+    --text-muted-light: #8d8a85;
     --border: #d4cfc8;
     --font-display: 'DM Serif Display', Georgia, serif;
     --font-body: 'DM Sans', -apple-system, sans-serif;
@@ -27,6 +29,8 @@
     --cream: #141414;
     --warm-white: #1a1a1a;
     --warm-gray: #777;
+    --text-muted: #9ca3af;
+    --text-muted-light: #6b7280;
     --border: #2a2a2a;
 }
 
@@ -307,7 +311,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-admin-back {
     border: 1px solid var(--border);
-    color: var(--warm-gray);
+    color: var(--text-muted);
     font-size: 0.78rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -394,7 +398,7 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     letter-spacing: 1px;
     text-transform: uppercase;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     margin-top: 0.25rem;
 }
 
@@ -419,7 +423,7 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     background: rgba(0,0,0,0.02);
     border-bottom: 1px solid var(--border);
     padding: 0.85rem 1rem;
@@ -540,13 +544,13 @@ h1, h2, h3, h4, h5, h6 {
 .admin-form .form-select:focus {
     border-color: var(--ink);
     box-shadow: none;
-    outline: 2px solid rgba(12,24,33,0.1);
+    outline: 2px solid rgba(200, 85, 61, 0.25);
     outline-offset: 1px;
 }
 
 .admin-form .form-text {
     font-size: 0.76rem;
-    color: var(--warm-gray);
+    color: var(--text-muted);
 }
 
 .img-preview-box {
@@ -570,6 +574,10 @@ h1, h2, h3, h4, h5, h6 {
     background: var(--ink);
     padding: 2rem;
     position: relative;
+}
+
+[data-bs-theme="dark"] .login-page {
+    background: #0c1821;
 }
 
 .login-page::after {
@@ -616,7 +624,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .login-sub {
     text-align: center;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     font-size: 0.85rem;
     margin-bottom: 2rem;
 }
@@ -661,7 +669,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .empty-box p {
     font-size: 0.88rem;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -706,6 +714,7 @@ h1, h2, h3, h4, h5, h6 {
     border: 2px solid var(--border);
     padding: 1.75rem 2rem;
     background: var(--cream);
+    color: var(--ink);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -720,12 +729,13 @@ h1, h2, h3, h4, h5, h6 {
 
 .welcome-banner h5 {
     font-family: var(--font-display);
+    color: var(--ink);
     margin-bottom: 0.15rem;
 }
 
 .welcome-banner p {
     font-size: 0.88rem;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -761,7 +771,7 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     letter-spacing: 0.5px;
     text-transform: uppercase;
-    color: var(--warm-gray);
+    color: var(--text-muted);
     border: none;
     border-bottom: 2px solid transparent;
     padding: 0.65rem 1.25rem;
@@ -777,6 +787,21 @@ h1, h2, h3, h4, h5, h6 {
 /* ---- Responsive ---- */
 @media (max-width: 991px) {
     .admin-content { padding: 1.25rem; }
+}
+
+/* ---- Skip Link ---- */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    z-index: 10000;
+    padding: 0.5rem 1rem;
+    background: var(--rust);
+    color: white;
+    text-decoration: none;
+}
+.skip-link:focus {
+    top: 0;
 }
 
 @media (max-width: 768px) {

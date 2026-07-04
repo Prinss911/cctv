@@ -2,6 +2,18 @@
     'use strict';
     var THEME_KEY = 'cctv_theme';
 
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
     function applyTheme(theme) {
         document.getElementById('html-root').setAttribute('data-bs-theme', theme);
         var icon = document.getElementById('theme-icon');
@@ -50,30 +62,36 @@
         var nav = document.querySelector('.site-nav');
         if (!nav) return;
         function check() { nav.classList.toggle('scrolled', window.scrollY > 30); }
-        window.addEventListener('scroll', check, { passive: true });
-        check();
+        var debouncedCheck = debounce(check, 100);
+        window.addEventListener('scroll', debouncedCheck, { passive: true });
+        check(); // run immediately for initial state
     }
 
     function initActiveLink() {
         var secs = document.querySelectorAll('section[id]');
         var links = document.querySelectorAll('.nav-links a');
         if (!secs.length || !links.length) return;
-        window.addEventListener('scroll', function() {
+        function updateActiveLink() {
             var y = window.scrollY + 100;
             secs.forEach(function(s) {
                 if (y >= s.offsetTop && y < s.offsetTop + s.offsetHeight) {
                     links.forEach(function(l) { l.classList.toggle('active', l.getAttribute('href') === '#' + s.id); });
                 }
             });
-        }, { passive: true });
+        }
+        var debouncedUpdate = debounce(updateActiveLink, 100);
+        window.addEventListener('scroll', debouncedUpdate, { passive: true });
+        window.addEventListener('resize', debouncedUpdate, { passive: true });
+        updateActiveLink(); // run immediately for initial state
     }
 
     function initBackTop() {
         var btn = document.getElementById('back-to-top');
         if (!btn) return;
-        window.addEventListener('scroll', function() {
+        var debouncedScroll = debounce(function() {
             btn.classList.toggle('visible', window.scrollY > 400);
-        }, { passive: true });
+        }, 100);
+        window.addEventListener('scroll', debouncedScroll, { passive: true });
         btn.addEventListener('click', function(e) { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
     }
 
@@ -82,12 +100,44 @@
         if (!modal) return;
         modal.addEventListener('show.bs.modal', function(e) {
             var src = e.relatedTarget.getAttribute('data-img');
-            document.getElementById('galleryModalImg').src = src;
+            var img = document.getElementById('galleryModalImg');
+            if (img) {
+                img.src = src;
+                var alt = e.relatedTarget.querySelector('img')?.getAttribute('alt') || 'Gallery image';
+                img.alt = alt;
+            }
         });
     }
 
+    function initHeroCarousel() {
+        var carouselEl = document.getElementById('heroCarousel');
+        if (!carouselEl) return;
+        
+        // Initialize with Bootstrap Carousel API for more control
+        var heroCarousel = new bootstrap.Carousel(carouselEl, {
+            interval: 6000,   // matches data-bs-interval in HTML
+            ride: 'carousel', // auto-start
+            pause: 'hover',   // pause on mouse enter
+            wrap: true,       // continuous loop
+            keyboard: true    // keyboard navigation (default)
+        });
+        
+        // Pause carousel when not visible (performance optimization)
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (!entry.isIntersecting) {
+                    heroCarousel.pause();
+                } else {
+                    heroCarousel.cycle();
+                }
+            });
+        }, { threshold: 0 });
+        observer.observe(carouselEl);
+    }
+    
     function initMobileClose() {
         document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+
             a.addEventListener('click', function() {
                 var c = document.querySelector('.navbar-collapse.show');
                 if (c) { var b = bootstrap.Collapse.getInstance(c); if (b) b.hide(); }
@@ -104,5 +154,6 @@
         initBackTop();
         initLightbox();
         initMobileClose();
+        initHeroCarousel();
     });
 })();

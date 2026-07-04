@@ -1,6 +1,6 @@
 <div class="page-head">
     <h4 class="page-title">Dashboard</h4>
-    <span style="font-size:0.78rem;color:var(--warm-gray);font-weight:500;letter-spacing:0.03em"><?= date('l, d F Y') ?></span>
+    <span style="font-size:0.78rem;color:var(--text-muted);font-weight:500;letter-spacing:0.03em"><?= date('l, d F Y') ?></span>
 </div>
 
 <div class="welcome-banner">

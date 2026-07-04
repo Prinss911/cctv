@@ -11,6 +11,7 @@ class DatabaseSeeder
         $this->seedPricing($db);
         $this->seedTestimonials($db);
         $this->seedClients($db);
+        $this->seedGallery($db);
 
         echo "  All seeders completed.\n";
     }
@@ -72,9 +73,9 @@ class DatabaseSeeder
     {
         $db->exec("DELETE FROM sliders");
         $sliders = [
-            ['Solusi Keamanan Terpercaya', 'Pasang CCTV untuk keamanan rumah dan bisnis Anda', 'slider-1.jpg', 'Hubungi Kami', '#', 1],
-            ['Paket CCTV Terlengkap', 'Harga sudah termasuk pemasangan dan garansi', 'slider-2.jpg', 'Lihat Paket', '#Harga', 2],
-            ['Teknisi Berpengalaman', 'Pemasangan rapi dan profesional oleh teknisi tersertifikasi', 'slider-3.jpg', 'Hubungi Kami', '#', 3],
+            ['Solusi Keamanan Terpercaya', 'Pasang CCTV untuk keamanan rumah dan bisnis Anda', 'sliders/slider-1.jpg', 'Hubungi Kami', '#', 1],
+            ['Paket CCTV Terlengkap', 'Harga sudah termasuk pemasangan dan garansi', 'sliders/slider-2.jpg', 'Lihat Paket', '#Harga', 2],
+            ['Teknisi Berpengalaman', 'Pemasangan rapi dan profesional oleh teknisi tersertifikasi', 'sliders/slider-3.jpg', 'Hubungi Kami', '#', 3],
         ];
 
         $stmt = $db->prepare("INSERT INTO sliders (title, subtitle, image, button_text, button_url, sort_order) VALUES (?, ?, ?, ?, ?, ?)");
@@ -88,9 +89,9 @@ class DatabaseSeeder
     {
         $db->exec("DELETE FROM pricing_brands");
         $brands = [
-            ['Hikvision', 'hikvision', 'hikvision.png', 1, 1],
-            ['Dahua', 'dahua', 'dahua.png', 1, 2],
-            ['SPC', 'spc', 'spc.png', 1, 3],
+            ['Hikvision', 'hikvision', 'logo/hikvision.png', 1, 1],
+            ['Dahua', 'dahua', 'logo/dahua.png', 1, 2],
+            ['SPC', 'spc', 'logo/spc.png', 1, 3],
         ];
 
         $stmt = $db->prepare("INSERT INTO pricing_brands (name, slug, logo, is_active, sort_order) VALUES (?, ?, ?, ?, ?)");
@@ -243,10 +244,10 @@ class DatabaseSeeder
     {
         $db->exec("DELETE FROM clients");
         $clients = [
-            ['Hikvision', 'hikvision.png', 'https://www.hikvision.com', 1],
-            ['Dahua', 'dahua.png', 'https://www.dahuasecurity.com', 2],
-            ['SPC', 'spc.png', null, 3],
-            ['Hilook', 'hilook.png', 'https://www.hilook.com', 4],
+            ['Hikvision', 'clients/hikvision.png', 'https://www.hikvision.com', 1],
+            ['Dahua', 'clients/dahua.png', 'https://www.dahuasecurity.com', 2],
+            ['SPC', 'clients/spc.png', null, 3],
+            ['Hilook', 'clients/hilook.png', 'https://www.hilook.com', 4],
         ];
 
         $stmt = $db->prepare("INSERT INTO clients (name, logo, website, sort_order) VALUES (?, ?, ?, ?)");
@@ -254,5 +255,23 @@ class DatabaseSeeder
             $stmt->execute($c);
         }
         echo "  Seeded: clients\n";
+    }
+
+    private function seedGallery(PDO $db): void
+    {
+        $db->exec("DELETE FROM gallery");
+        $gallery = [
+            ['Pemasangan CCTV Rumah 2 Kamera', 'gallery/gallery-1.jpg', 'indoor', 1],
+            ['Pemasangan CCTV Toko 4 Kamera', 'gallery/gallery-2.jpg', 'outdoor', 2],
+            ['Pemasangan CCTV Gudang 8 Kamera', 'gallery/gallery-3.jpg', 'indoor', 3],
+            ['Konfigurasi DVR & Monitoring HP', 'gallery/gallery-4.jpg', 'detail', 4],
+            ['Tim Teknisi Saat Pemasangan', 'gallery/gallery-5.jpg', 'team', 5],
+        ];
+
+        $stmt = $db->prepare("INSERT INTO gallery (title, image, category, sort_order) VALUES (?, ?, ?, ?)");
+        foreach ($gallery as $g) {
+            $stmt->execute($g);
+        }
+        echo "  Seeded: gallery\n";
     }
 }

@@ -2,24 +2,20 @@
 
 namespace App\Models;
 
-use App\Models\Database;
-
-class PricingBrandModel
+class PricingBrandModel extends BaseModel
 {
-    private $db;
-    private $table = 'pricing_brands';
-
-    public function __construct()
-    {
-        $this->db = Database::getInstance();
-    }
+    protected string $table = 'pricing_brands';
+    protected bool $softDeletes = true;
 
     /**
-     * Get all brands with optional filters
+     * Get all brands with optional filters (kept for backward compatibility)
      */
-    public function getAll($filters = [])
+    public function getAllWithFilters(array $filters = []): array
     {
         $sql = "SELECT * FROM {$this->table} WHERE 1=1";
+        if ($this->softDeletes) {
+            $sql .= " AND deleted_at IS NULL";
+        }
         $params = [];
 
         if (!empty($filters['is_active'])) {
@@ -35,11 +31,19 @@ class PricingBrandModel
     }
 
     /**
+     * Get all brands - compatible with BaseModel::getAll()
+     */
+    public function getAll(string $orderBy = 'sort_order ASC, name ASC', ?int $limit = null, ?int $offset = null): array
+    {
+        return parent::getAll($orderBy, $limit, $offset);
+    }
+
+    /**
      * Get active brands for frontend display
      */
-    public function getActive()
+    public function getActive(string $orderBy = 'sort_order ASC, name ASC', ?int $limit = null, ?int $offset = null): array
     {
-        return $this->getAll(['is_active' => true]);
+        return parent::getActive($orderBy, $limit, $offset);
     }
 
     /**
@@ -47,9 +51,7 @@ class PricingBrandModel
      */
     public function getById($id)
     {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetch();
+        return $this->find($id);
     }
 
     /**
@@ -57,7 +59,11 @@ class PricingBrandModel
      */
     public function getBySlug($slug)
     {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE slug = ?");
+        $sql = "SELECT * FROM {$this->table} WHERE slug = ?";
+        if ($this->softDeletes) {
+            $sql .= " AND deleted_at IS NULL";
+        }
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$slug]);
         return $stmt->fetch();
     }
@@ -65,30 +71,27 @@ class PricingBrandModel
     /**
      * Create new brand
      */
-    public function create($data)
+    public function create(array $data): int
     {
-        $sql = "INSERT INTO {$this->table} (name, slug, logo, is_active, sort_order, created_at, updated_at) 
-                VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
-        
-        $stmt = $this->db->prepare($sql);
-        $result = $stmt->execute([
-            $data['name'],
-            $data['slug'],
-            $data['logo'] ?? null,
-            $data['is_active'] ?? 1,
-            $data['sort_order'] ?? 0
-        ]);
+        $data['created_at'] = date('Y-m-d H:i:s');
+        $data['updated_at'] = date('Y-m-d H:i:s');
+
+        $columns = implode(', ', array_keys($data));
+        $placeholders = implode(', ', array_fill(0, count($data), '?'));
+
+        $stmt = $this->db->prepare("INSERT INTO {$this->table} ($columns) VALUES ($placeholders)");
+        $result = $stmt->execute(array_values($data));
 
         if ($result) {
-            return $this->db->lastInsertId();
+            return (int) $this->db->lastInsertId();
         }
-        return false;
+        return 0;
     }
 
     /**
      * Update brand
      */
-    public function update($id, $data)
+    public function update(int $id, array $data): bool
     {
         $fields = [];
         $params = [];
@@ -105,7 +108,8 @@ class PricingBrandModel
             return false;
         }
 
-        $fields[] = "updated_at = CURRENT_TIMESTAMP";
+        $fields[] = "updated_at = ?";
+        $params[] = date('Y-m-d H:i:s');
         $params[] = $id;
 
         $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE id = ?";
@@ -114,33 +118,29 @@ class PricingBrandModel
     }
 
     /**
-     * Delete brand
+     * Soft delete brand
      */
-    public function delete($id)
+    public function delete(int $id): bool
     {
-        $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id = ?");
-        return $stmt->execute([$id]);
+        return parent::delete($id);
     }
 
     /**
-     * Update brand sort order (for drag-drop reordering)
+     * Force delete brand (permanent)
      */
-    public function updateSortOrder($updates)
+    public function forceDelete(int $id): bool
     {
-        // $updates = [[id => sort_order], ...]
-        $this->db->beginTransaction();
-        try {
-            foreach ($updates as $update) {
-                $stmt = $this->db->prepare("UPDATE {$this->table} SET sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-                $stmt->execute([$update['sort_order'], $update['id']]);
-            }
-            $this->db->commit();
-            return true;
-        } catch (\Exception $e) {
-            $this->db->rollBack();
-            return false;
-        }
+        return parent::forceDelete($id);
     }
+
+    /**
+     * Restore soft deleted brand
+     */
+    public function restore(int $id): bool
+    {
+        return parent::restore($id);
+    }
+
 
     /**
      * Get brand with package count
@@ -153,6 +153,9 @@ class PricingBrandModel
             LEFT JOIN pricing_packages p ON p.brand_id = b.id AND p.is_active = 1
             WHERE 1=1
         ";
+        if ($this->softDeletes) {
+            $sql .= " AND b.deleted_at IS NULL";
+        }
         $params = [];
 
         if ($brandId) {
@@ -164,7 +167,7 @@ class PricingBrandModel
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
-        
+
         if ($brandId) {
             return $stmt->fetch();
         }
@@ -179,30 +182,30 @@ class PricingBrandModel
         $slug = strtolower(trim($name));
         $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
         $slug = trim($slug, '-');
-        
+
         $originalSlug = $slug;
         $counter = 1;
-        
+
         while (true) {
             $sql = "SELECT id FROM {$this->table} WHERE slug = ?";
             $params = [$slug];
-            
+
             if ($excludeId) {
                 $sql .= " AND id != ?";
                 $params[] = $excludeId;
             }
-            
+
             $stmt = $this->db->prepare($sql);
             $stmt->execute($params);
-            
+
             if (!$stmt->fetch()) {
                 break;
             }
-            
+
             $slug = $originalSlug . '-' . $counter;
             $counter++;
         }
-        
+
         return $slug;
     }
 
@@ -213,14 +216,22 @@ class PricingBrandModel
     {
         $sql = "SELECT id FROM {$this->table} WHERE slug = ?";
         $params = [$slug];
-        
+
         if ($excludeId) {
             $sql .= " AND id != ?";
             $params[] = $excludeId;
         }
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetch() !== false;
+    }
+
+    /**
+     * Get trashed brands
+     */
+    public function getTrashed()
+    {
+        return $this->onlyTrashed();
     }
 }

@@ -5,17 +5,28 @@ namespace App\Models;
 class SettingModel extends BaseModel
 {
     protected string $table = 'settings';
+    protected bool $softDeletes = true;
 
+    // Allowed columns for ORDER BY clause (prevents SQL injection)
+    protected array $allowedOrderBy = ['id', 'created_at', 'updated_at', 'key', 'value', 'group'];
     public function getByGroup(string $group): array
     {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE `group` = ? ORDER BY id ASC");
+        $sql = "SELECT * FROM {$this->table} WHERE `group` = ? ORDER BY id ASC";
+        if ($this->softDeletes) {
+            $sql = "SELECT * FROM {$this->table} WHERE `group` = ? AND deleted_at IS NULL ORDER BY id ASC";
+        }
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$group]);
         return $stmt->fetchAll();
     }
 
     public function getByKey(string $key): ?array
     {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE `key` = ?");
+        $sql = "SELECT * FROM {$this->table} WHERE `key` = ?";
+        if ($this->softDeletes) {
+            $sql .= " AND deleted_at IS NULL";
+        }
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$key]);
         $result = $stmt->fetch();
         return $result ?: null;
@@ -35,5 +46,13 @@ class SettingModel extends BaseModel
             $grouped[$setting['group']][] = $setting;
         }
         return $grouped;
+    }
+
+    /**
+     * Get trashed settings
+     */
+    public function getTrashed(): array
+    {
+        return $this->onlyTrashed();
     }
 }

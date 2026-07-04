@@ -6,7 +6,11 @@ class View
 {
     public static function render(string $template, array $data = [], string $layout = 'main'): void
     {
-        extract($data);
+        foreach ($data as $key => $value) {
+            if (preg_match('/^[a-zA-Z_]\w*$/', $key)) {
+                $$key = $value;
+            }
+        }
 
         ob_start();
         $templatePath = VIEWS_PATH . '/' . str_replace('.', '/', $template) . '.php';
@@ -27,7 +31,11 @@ class View
 
     public static function partial(string $name, array $data = []): void
     {
-        extract($data);
+        foreach ($data as $key => $value) {
+            if (preg_match('/^[a-zA-Z_]\w*$/', $key)) {
+                $$key = $value;
+            }
+        }
         $path = VIEWS_PATH . '/partials/' . $name . '.php';
         if (file_exists($path)) {
             include $path;

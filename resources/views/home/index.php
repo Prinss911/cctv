@@ -1,34 +1,89 @@
+<?php
+// JSON-LD for homepage
+$homeData = [
+    '@context' => 'https://schema.org',
+    '@type' => 'WebSite',
+    'name' => setting('site_name', 'Bayu CCTV'),
+    'url' => setting('app_url', 'http://localhost'),
+    'potentialAction' => [
+        '@type' => 'SearchAction',
+        'target' => setting('app_url', 'http://localhost') . '/?s={search_term_string}',
+        'query-input' => 'required name=search_term_string'
+    ]
+];
+if (setting('logo')) {
+    $homeData['image'] = upload_url(setting('logo'));
+}
+// Organization
+$orgData = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Organization',
+    'name' => setting('site_name', 'Bayu CCTV'),
+    'url' => setting('app_url', 'http://localhost'),
+    'logo' => setting('logo') ? upload_url(setting('logo')) : null,
+    'telephone' => setting('whatsapp_number'),
+    'address' => setting('address') ? [
+        '@type' => 'PostalAddress',
+        'streetAddress' => setting('address')
+    ] : null,
+    'contactPoint' => [
+        '@type' => 'ContactPoint',
+        'telephone' => setting('whatsapp_number'),
+        'contactType' => 'Customer service',
+        'areaServed' => 'ID'
+    ]
+];
+// Remove null values
+$orgData = array_filter($orgData, fn($v) => $v !== null);
+echo '<script type="application/ld+json">' . json_encode($homeData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . '</script>';
+echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . '</script>';
+?>
 <!-- HERO -->
-<section id="beranda" style="padding:0">
-    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="6000">
+<section id="beranda" class="p-0" aria-label="Hero Banner">
+    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="6000" role="region" aria-roledescription="carousel" aria-label="Hero Banner">
         <div class="carousel-inner">
             <?php foreach ($sliders as $i => $slider): ?>
-            <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
-                <div class="hero-slide" style="background-image:url('<?= upload_url($slider['image']) ?>')">
-                    <div class="hero-overlay">
-                        <div class="container">
-                            <div class="hero-content">
-                                <div class="hero-tag">Keamanan Terpercaya</div>
-                                <h1><?= e($slider['title']) ?></h1>
-                                <p><?= e($slider['subtitle']) ?></p>
-                                <div class="d-flex gap-3 flex-wrap">
-                                    <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" class="btn-hero btn-hero-fill">
-                                        <i class="fab fa-whatsapp"></i> Hubungi Kami
-                                    </a>
-                                    <a href="#harga" class="btn-hero btn-hero-ghost">
-                                        Lihat Paket <i class="fas fa-arrow-right"></i>
-                                    </a>
-                                </div>
+            <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>" role="group" aria-roledescription="slide" aria-label="<?= $i + 1 ?> of <?= count($sliders) ?>: <?= e($slider['title']) ?>">
+                <?php
+                    $imagePath = $slider['image'];
+                    $imageUrl = upload_url($imagePath);
+                ?>
+<?php $loadingAttr = $i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'; ?>
+                 <img src="<?= $imageUrl ?>" 
+                      <?= $loadingAttr ?>
+                      width="1600" height="900"
+                      alt="<?= e($slider['title']) ?>"
+                      class="d-block w-100 hero-slide-img">
+                <div class="hero-overlay">
+                    <div class="container">
+                        <div class="hero-content">
+                            <div class="hero-tag"><?= e($slider['tag'] ?? setting('hero_tag_default', 'Keamanan Terpercaya')) ?></div>
+                            <h1><?= e($slider['title']) ?></h1>
+                            <p><?= e($slider['subtitle']) ?></p>
+                            <div class="d-flex gap-3 flex-wrap">
+                                <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener" class="btn-hero btn-hero-fill">
+                                    <i class="fab fa-whatsapp"></i> Hubungi Kami
+                                </a>
+                                <a href="#harga" class="btn-hero btn-hero-ghost">
+                                    Lihat Paket <i class="fas fa-arrow-right"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <?php endforeach; ?>
-        </div>
-        <?php if (count($sliders) > 1): ?>
-        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
-        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+         </div>
+         <?php if (count($sliders) > 1): ?>
+         <div class="carousel-indicators">
+             <?php foreach ($sliders as $i => $slider): ?>
+             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="<?= $i ?>" class="<?= $i === 0 ? 'active' : '' ?>" aria-label="Slide <?= $i + 1 ?>: <?= e($slider['title']) ?>"></button>
+             <?php endforeach; ?>
+         </div>
+         <?php endif; ?>
+         <?php if (count($sliders) > 1): ?>
+<button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev" aria-label="Previous slide"><span class="carousel-control-prev-icon"></span></button>
+         <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next" aria-label="Next slide"><span class="carousel-control-next-icon"></span></button>
         <?php endif; ?>
     </div>
 </section>
@@ -73,7 +128,7 @@
                         </div>
                     </div>
                 </div>
-                <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" class="btn-hero btn-hero-fill mt-4" style="display:inline-flex">
+                <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener" class="btn-hero btn-hero-fill mt-4" style="display:inline-flex">
                     <i class="fab fa-whatsapp"></i> Konsultasi Gratis
                 </a>
             </div>
@@ -114,7 +169,7 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link <?= $i === 0 ? 'active' : '' ?>" id="tab-<?= $brand['slug'] ?>" data-bs-toggle="pill" data-bs-target="#panel-<?= $brand['slug'] ?>" type="button" role="tab">
                         <?php if ($brand['logo']): ?>
-                        <img src="<?= url('/uploads/' . $brand['logo']) ?>" alt="<?= e($brand['name']) ?>" style="height: 24px; margin-right: 8px;">
+                        <img src="<?= upload_url($brand['logo']) ?>" alt="<?= e($brand['name']) ?>" style="height: 24px; margin-right: 8px;">
                         <?php endif; ?>
                         <?= e($brand['name']) ?>
                     </button>
@@ -148,15 +203,15 @@
                                             <li><i class="fas fa-check"></i> <?= e($feat['feature']) ?></li>
                                             <?php endforeach; ?>
                                         </ul>
-                                        <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode($pkg['whatsapp_message']) ?>"
-                                           target="_blank" class="btn-price">
-                                            <i class="fab fa-whatsapp me-1"></i>Pesan Sekarang
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+                                         <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode($pkg['whatsapp_message']) ?>"
+                                            target="_blank" rel="noopener" class="btn-price">
+                                             <i class="fab fa-whatsapp me-1"></i>Pesan Sekarang
+                                         </a>
+                                     </div>
+                                 </div>
+                             </div>
+                             <?php endforeach; ?>
+                         <?php else: ?>
                         <div class="col-12 text-center text-muted py-5">
                             <p>Belum ada paket untuk brand ini.</p>
                         </div>
@@ -190,17 +245,17 @@
                             <li><i class="fas fa-check"></i> <?= e($feat['feature']) ?></li>
                             <?php endforeach; ?>
                         </ul>
-                        <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode($pkg['whatsapp_message']) ?>"
-                           target="_blank" class="btn-price">
-                            <i class="fab fa-whatsapp me-1"></i>Pesan Sekarang
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
-        <?php endif; ?>
-    </div>
+                         <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode($pkg['whatsapp_message']) ?>"
+                            target="_blank" rel="noopener" class="btn-price">
+                             <i class="fab fa-whatsapp me-1"></i>Pesan Sekarang
+                         </a>
+                     </div>
+                 </div>
+             </div>
+             <?php endforeach; ?>
+         </div>
+         <?php endif; ?>
+     </div>
 </section>
 
 <!-- GALLERY -->
@@ -214,8 +269,14 @@
         </div>
         <div class="gallery-grid reveal">
             <?php foreach ($gallery as $photo): ?>
-            <div class="gallery-cell" data-bs-toggle="modal" data-bs-target="#galleryModal" data-img="<?= upload_url($photo['image']) ?>">
-                <img src="<?= upload_url($photo['image']) ?>" alt="<?= e($photo['title']) ?>" loading="lazy">
+            <?php
+                $imagePath = $photo['image'];
+                $imageUrl = upload_url($imagePath);
+            ?>
+            <div class="gallery-cell" data-bs-toggle="modal" data-bs-target="#galleryModal" data-img="<?= $imageUrl ?>">
+                <img src="<?= $imageUrl ?>"
+                     alt="<?= e($photo['title']) ?>"
+                     loading="lazy">
                 <?php if ($photo['title']): ?>
                 <span class="gallery-label"><?= e($photo['title']) ?></span>
                 <?php endif; ?>
@@ -230,7 +291,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content bg-transparent border-0">
             <div class="modal-body text-center p-0">
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" style="z-index:10"></button>
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close gallery" style="z-index:10"></button>
                 <img id="galleryModalImg" src="" alt="" class="img-fluid">
             </div>
         </div>
@@ -247,7 +308,7 @@
         <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
             <div class="carousel-inner">
                 <?php $chunks = array_chunk($testimonials, 3); foreach ($chunks as $i => $chunk): ?>
-                <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
+<div class="carousel-item <?= $i === 0 ? 'active' : '' ?>" role="group" aria-roledescription="slide" aria-label="Slide <?= $i + 1 ?> of <?= count($chunks) ?>">
                     <div class="row g-3">
                         <?php foreach ($chunk as $testi): ?>
                         <div class="col-md-4">
@@ -320,7 +381,7 @@
             Konsultasi gratis dan survey lokasi tanpa biaya. Hubungi kami untuk penawaran terbaik.
         </p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
-            <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode('Halo, saya ingin konsultasi pemasangan CCTV.') ?>" target="_blank" class="btn-hero btn-hero-fill">
+            <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode('Halo, saya ingin konsultasi pemasangan CCTV.') ?>" target="_blank" rel="noopener" class="btn-hero btn-hero-fill">
                 <i class="fab fa-whatsapp"></i> Chat WhatsApp
             </a>
             <a href="tel:<?= e(setting('phone_number')) ?>" class="btn-hero btn-hero-ghost">

@@ -4,7 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\SettingModel;
-use App\Helpers\{View, Flash, Csrf, Upload};
+use App\Helpers\{View, Flash, Csrf, Upload, Request};
 
 class SettingsController
 {
@@ -32,22 +32,29 @@ class SettingsController
 
             if ($setting['type'] === 'image') {
                 $fileKey = 'setting_' . $key;
-                if (!empty($_FILES[$fileKey]['name'])) {
-                    $uploaded = Upload::handle($_FILES[$fileKey], 'logo');
-                    if ($uploaded) {
+                if (!empty(Request::file($fileKey)['name'] ?? '')) {
+                    $result = Upload::handle(Request::file($fileKey), 'logo');
+                    if (isset($result['path'])) {
                         if ($setting['value']) Upload::delete($setting['value']);
-                        $this->model->updateByKey($key, $uploaded);
+                        $this->model->updateByKey($key, $result['path']);
                     }
                 }
                 continue;
             }
 
-            if (isset($_POST[$key])) {
-                $this->model->updateByKey($key, trim($_POST[$key]));
+            if (Request::has($key)) {
+                $value = trim(Request::post($key));
+                if ($key === 'maps_embed' && !empty($value)) {
+                    if (!preg_match('#^https?://(www\.)?google\.com/maps/embed#i', $value)) {
+                        continue;
+                    }
+                }
+                $this->model->updateByKey($key, $value);
             }
         }
 
         Flash::set('success', 'Pengaturan berhasil disimpan.');
         redirect('/admin/settings');
+        exit;
     }
 }

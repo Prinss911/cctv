@@ -4,7 +4,7 @@
             <div class="col-lg-4">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <?php if (setting('logo')): ?>
-                    <img src="<?= upload_url(setting('logo')) ?>" alt="" height="30" style="filter:brightness(0) invert(1)">
+                    <img src="<?= upload_url(setting('logo')) ?>" alt="" height="30">
                     <?php else: ?>
                     <span class="nav-brand-mark" style="background:var(--rust)"><i class="fas fa-shield-halved" style="font-size:0.7rem"></i></span>
                     <span style="font-family:var(--font-display);color:white;font-size:1.1rem"><?= e(setting('site_name', 'Bayu CCTV')) ?></span>
@@ -12,7 +12,7 @@
                 </div>
                 <p style="line-height:1.8;font-size:0.88rem"><?= e(setting('site_tagline', 'Solusi Keamanan Terpercaya')) ?></p>
                 <div class="footer-social mt-3">
-                    <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                    <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>
                     <a href="mailto:<?= e(setting('email')) ?>"><i class="fas fa-envelope"></i></a>
                     <a href="tel:<?= e(setting('phone_number')) ?>"><i class="fas fa-phone"></i></a>
                 </div>
@@ -31,7 +31,7 @@
                 <h6 class="footer-heading">Kontak</h6>
                 <ul class="footer-links">
                     <li><a href="tel:<?= e(setting('phone_number')) ?>"><i class="fas fa-phone me-2" style="color:var(--rust)"></i><?= e(setting('phone_number')) ?></a></li>
-                    <li><a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank"><i class="fab fa-whatsapp me-2" style="color:var(--rust)"></i><?= e(setting('whatsapp_number')) ?></a></li>
+                    <li><a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener"><i class="fab fa-whatsapp me-2" style="color:var(--rust)"></i><?= e(setting('whatsapp_number')) ?></a></li>
                     <li><a href="mailto:<?= e(setting('email')) ?>"><i class="fas fa-envelope me-2" style="color:var(--rust)"></i><?= e(setting('email')) ?></a></li>
                     <li><span><i class="fas fa-map-marker-alt me-2" style="color:var(--rust)"></i><?= e(setting('address')) ?></span></li>
                 </ul>
@@ -39,7 +39,7 @@
             <div class="col-lg-3 col-md-4">
                 <h6 class="footer-heading">Lokasi</h6>
                 <?php if (setting('maps_embed')): ?>
-                <iframe src="<?= e(setting('maps_embed')) ?>" width="100%" height="160" style="border:0;filter:grayscale(0.5)" allowfullscreen="" loading="lazy"></iframe>
+                <iframe src="<?= e(setting('maps_embed')) ?>" width="100%" height="160" style="border:0;filter:grayscale(0.5)" allowfullscreen="" loading="lazy" title="<?= e(setting('site_name', 'Bayu CCTV')) ?> location on Google Maps"></iframe>
                 <?php else: ?>
                 <div style="height:160px;border:1px dashed rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.8rem">
                     <i class="fas fa-map me-1"></i>Peta belum dikonfigurasi

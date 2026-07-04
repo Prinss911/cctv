@@ -4,6 +4,18 @@
         <?= \App\Helpers\Csrf::field() ?>
         <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Nama Brand <span class="text-danger">*</span></label><input type="text" class="form-control" name="name" required></div><div class="col-md-6 mb-3"><label class="form-label">Slug <span class="text-danger">*</span></label><input type="text" class="form-control" name="slug" placeholder="Otomatis dari nama"></div></div>
         <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Logo</label><input type="file" class="form-control" id="logo" name="logo" accept="image/jpeg,image/png,image/webp,image/gif"><div class="form-text">Format: JPG, PNG, WebP, GIF. Maks 5MB.</div></div></div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Urutan</label>
+                <input type="number" class="form-control" name="sort_order" value="0" min="0">
+            </div>
+            <div class="col-md-6 mb-3 d-flex align-items-end">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" checked>
+                    <label class="form-check-label" for="is_active">Aktif</label>
+                </div>
+            </div>
+        </div>
         <button type="submit" class="btn-admin btn-admin-fill"><i class="fas fa-check"></i> Simpan</button>
     </form>
 </div></div>

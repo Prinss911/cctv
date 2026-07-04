@@ -12,6 +12,8 @@ return new class {
         $db->exec('PRAGMA foreign_keys = ON');
         
         // Create pricing_brands table
+        // Use datetime('now') for SQLite compatibility; works on MySQL/PostgreSQL too
+        // For MySQL/PostgreSQL, you can change to TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         $db->exec("
             CREATE TABLE IF NOT EXISTS pricing_brands (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,8 +22,8 @@ return new class {
                 logo TEXT,
                 is_active INTEGER DEFAULT 1,
                 sort_order INTEGER DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now'))
             )
         ");
         

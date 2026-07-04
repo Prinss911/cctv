@@ -1,11 +1,13 @@
 <?php
-
 namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\PricingBrandModel;
 use App\Models\PricingModel;
-use App\Helpers\{View, Flash, Csrf, Upload};
+use App\Models\Database;
+use App\Helpers\{View, Flash, Csrf, Upload, Request};
+use function trim;
+use function array_filter;
 
 class BrandController
 {
@@ -34,11 +36,10 @@ class BrandController
     {
         Csrf::verify();
         
-        $name = trim($_POST['name'] ?? '');
-        $slug = trim($_POST['slug'] ?? '');
-        $logo = Upload::handle($_FILES['logo'] ?? [], 'logo');
-        $isActive = isset($_POST['is_active']) ? 1 : 0;
-        $sortOrder = (int)($_POST['sort_order'] ?? 0);
+        $name = trim(Request::post('name', ''));
+        $slug = trim(Request::post('slug', ''));
+        $isActive = Request::has('is_active') ? 1 : 0;
+        $sortOrder = (int)Request::post('sort_order', 0);
 
         // Auto-generate slug if empty
         if (empty($slug)) {
@@ -49,27 +50,37 @@ class BrandController
             return;
         }
 
-        // Validate upload result
-        if ($logo === null && isset($_FILES['logo']) && $_FILES['logo']['error'] !== UPLOAD_ERR_NO_FILE) {
-            Flash::set('error', 'Upload logo gagal. Periksa ukuran dan format file.');
-            redirect('/admin/brands/create');
-            return;
+        // Handle logo upload (optional)
+        $result = Upload::handle(Request::file('logo'), 'logo');
+        $logoPath = null;
+        
+        if (isset($result['error'])) {
+            // Only show error if a file was actually selected but failed
+            if (Request::file('logo') !== null && Request::file('logo')['error'] !== UPLOAD_ERR_NO_FILE) {
+                Flash::set('error', $result['error']);
+                redirect('/admin/brands/create');
+                return;
+            }
+        } elseif (isset($result['path'])) {
+            $logoPath = $result['path'];
         }
 
         $id = $this->brandModel->create([
-            'name' => $name,
-            'slug' => $slug,
-            'logo' => $logo,
-            'is_active' => $isActive,
+            'name'       => $name,
+            'slug'       => $slug,
+            'logo'       => $logoPath,
+            'is_active'  => $isActive,
             'sort_order' => $sortOrder,
         ]);
 
         if ($id) {
             Flash::set('success', 'Brand berhasil ditambahkan.');
             redirect('/admin/brands');
+            exit;
         } else {
             Flash::set('error', 'Gagal menambahkan brand.');
             redirect('/admin/brands/create');
+            exit;
         }
     }
 
@@ -79,6 +90,7 @@ class BrandController
         if (!$brand) {
             Flash::set('error', 'Brand tidak ditemukan.');
             redirect('/admin/brands');
+            exit;
         }
         View::render('admin/brand/edit', compact('brand'), 'admin');
     }
@@ -93,10 +105,11 @@ class BrandController
             redirect('/admin/brands');
         }
 
-        $name = trim($_POST['name'] ?? '');
-        $slug = trim($_POST['slug'] ?? '');
-        $isActive = isset($_POST['is_active']) ? 1 : 0;
-        $sortOrder = (int)($_POST['sort_order'] ?? 0);
+        $name = trim(Request::post('name', ''));
+        $slug = trim(Request::post('slug', ''));
+        $isActive = Request::has('is_active') ? 1 : 0;
+        $sortOrder = (int)Request::post('sort_order', 0);
+
         // Check slug uniqueness (excluding current brand)
         if ($slug !== $brand['slug'] && $this->brandModel->slugExists($slug, (int)$id)) {
             Flash::set('error', 'Slug sudah digunakan. Gunakan slug lain.');
@@ -104,36 +117,46 @@ class BrandController
             return;
         }
 
-        // Handle logo upload
-        $uploadLogo = Upload::handle($_FILES['logo'] ?? [], 'logo');
-        if ($uploadLogo === null && isset($_FILES['logo']) && $_FILES['logo']['error'] !== UPLOAD_ERR_NO_FILE) {
-            Flash::set('error', 'Upload logo gagal. Periksa ukuran dan format file.');
-            redirect("/admin/brands/{$id}/edit");
-            return;
+        // Handle logo upload (optional)
+        $uploadLogo = null;
+        $result = Upload::handle(Request::file('logo'), 'logo');
+        
+        if (isset($result['error'])) {
+            if (Request::file('logo') !== null && Request::file('logo')['error'] !== UPLOAD_ERR_NO_FILE) {
+                Flash::set('error', $result['error']);
+                redirect("/admin/brands/{$id}/edit");
+                return;
+            }
+        } elseif (isset($result['path'])) {
+            $uploadLogo = $result['path'];
         }
 
-        // Handle logo deletion for new upload
+        // Determine final logo path
+        $finalLogo = $brand['logo'];
         if ($uploadLogo !== null) {
             // Delete old logo if exists
             if ($brand['logo']) {
                 Upload::delete($brand['logo']);
             }
+            $finalLogo = $uploadLogo;
         }
 
         $result = $this->brandModel->update((int)$id, [
-            'name' => $name,
-            'slug' => $slug,
-            'logo' => $uploadLogo !== null ? $uploadLogo : ($brand['logo'] ?? ''),
-            'is_active' => $isActive,
+            'name'       => $name,
+            'slug'       => $slug,
+            'logo'       => $finalLogo,
+            'is_active'  => $isActive,
             'sort_order' => $sortOrder,
         ]);
 
         if ($result) {
             Flash::set('success', 'Brand berhasil diperbarui.');
             redirect('/admin/brands');
+            exit;
         } else {
             Flash::set('error', 'Gagal memperbarui brand.');
             redirect("/admin/brands/{$id}/edit");
+            exit;
         }
     }
 
@@ -145,6 +168,7 @@ class BrandController
         if (!$brand) {
             Flash::set('error', 'Brand tidak ditemukan.');
             redirect('/admin/brands');
+            exit;
         }
 
         // Check if brand has packages
@@ -154,19 +178,54 @@ class BrandController
             redirect('/admin/brands');
             return;
         }
-
-        // Delete logo file if exists
-        if ($brand['logo']) {
-            Upload::delete($brand['logo']);
+    
+        // Begin transaction
+        $db = Database::getInstance();
+        $db->beginTransaction();
+        
+        try {
+            // Delete from database first
+            $result = $this->brandModel->delete((int)$id);
+            
+            if ($result) {
+                // Commit transaction
+                $db->commit();
+                
+                // Delete logo file if exists (after successful DB commit)
+                if ($brand['logo']) {
+                    try {
+                        Upload::delete($brand['logo']);
+                    } catch (Exception $e) {
+                        // Log file deletion error but don't affect transaction outcome
+                        error_log('BrandController::destroy file deletion error: ' . $e->getMessage());
+                        // Note: file orphan is acceptable as per requirement
+                    }
+                }
+                
+                Flash::set('success', 'Brand berhasil dihapus.');
+            } else {
+                // Delete failed, rollback
+                $db->rollBack();
+                Flash::set('error', 'Gagal menghapus brand.');
+                redirect('/admin/brands');
+                return;
+            }
+        } catch (Exception $e) {
+            // Rollback on any exception
+            $db->rollBack();
+            Flash::set('error', 'Terjadi kesalahan saat menghapus brand.');
+            error_log('BrandController::destroy error: ' . $e->getMessage());
+            redirect('/admin/brands');
+            return;
         }
-
-        $this->brandModel->delete((int)$id);
-        Flash::set('success', 'Brand berhasil dihapus.');
+        
         redirect('/admin/brands');
+        exit;
     }
 
     public function reorder(): void
     {
+        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $updates = [];
         foreach ($ids as $order => $id) {

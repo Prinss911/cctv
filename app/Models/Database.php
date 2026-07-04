@@ -8,13 +8,13 @@ use PDOException;
 class Database
 {
     private static ?PDO $instance = null;
+    private static ?string $driver = null;
 
     public static function getInstance(): PDO
     {
         if (self::$instance === null) {
             $config = require BASE_PATH . '/config/database.php';
             $driver = $config['driver'] ?? 'sqlite';
-
             try {
                 switch ($driver) {
                     case 'mysql':
@@ -46,18 +46,59 @@ class Database
                 self::$instance->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
                 self::$instance->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
             } catch (PDOException $e) {
-                if (env('APP_DEBUG', false)) {
-                    die("Database connection failed: " . $e->getMessage());
-                }
-                die("Database connection failed.");
+                throw new \RuntimeException('Database connection failed: ' . $e->getMessage());
             }
         }
 
         return self::$instance;
     }
 
+    public static function getDriver(): string
+    {
+        if (self::$driver === null) {
+            $config = require BASE_PATH . '/config/database.php';
+            self::$driver = $config['driver'] ?? 'sqlite';
+        }
+        return self::$driver;
+    }
+
+    /**
+     * Compile schema type for current database driver
+     * Translates SQLite-specific types to driver-appropriate equivalents
+     * 
+     * @param string $type Original type (SQLite style)
+     * @return string Compiled type for current driver
+     */
+    public static function compileSchema(string $type): string
+    {
+        $driver = self::getDriver();
+
+        // Auto-increment primary key patterns
+        $patterns = [
+            '/INTEGER PRIMARY KEY AUTOINCREMENT/i' => match ($driver) {
+                'mysql' => 'INT AUTO_INCREMENT PRIMARY KEY',
+                'pgsql' => 'SERIAL PRIMARY KEY',
+                'sqlite' => 'INTEGER PRIMARY KEY AUTOINCREMENT',
+            },
+            '/INTEGER NOT NULL AUTOINCREMENT/i' => match ($driver) {
+                'mysql' => 'INT NOT NULL AUTO_INCREMENT',
+                'pgsql' => 'SERIAL NOT NULL',
+                'sqlite' => 'INTEGER NOT NULL AUTOINCREMENT',
+            },
+        ];
+
+        foreach ($patterns as $pattern => $replacement) {
+            if (preg_match($pattern, $type)) {
+                return $replacement;
+            }
+        }
+
+        return $type;
+    }
+
     public static function reset(): void
     {
         self::$instance = null;
+        self::$driver = null;
     }
 }

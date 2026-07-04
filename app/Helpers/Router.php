@@ -6,22 +6,23 @@ class Router
 {
     private array $routes = [];
 
-    public function get(string $path, string $handler): void
+    public function get(string $path, string $handler, array $middleware = []): void
     {
-        $this->addRoute('GET', $path, $handler);
+        $this->addRoute('GET', $path, $handler, $middleware);
     }
 
-    public function post(string $path, string $handler): void
+    public function post(string $path, string $handler, array $middleware = []): void
     {
-        $this->addRoute('POST', $path, $handler);
+        $this->addRoute('POST', $path, $handler, $middleware);
     }
 
-    private function addRoute(string $method, string $path, string $handler): void
+    private function addRoute(string $method, string $path, string $handler, array $middleware): void
     {
         $this->routes[] = [
             'method' => $method,
             'path' => $path,
             'handler' => $handler,
+            'middleware' => $middleware,
         ];
     }
 
@@ -36,6 +37,10 @@ class Router
 
             $params = $this->match($route['path'], $uri);
             if ($params !== false) {
+                // Run middleware
+                foreach ($route['middleware'] as $middleware) {
+                    $middleware::handle();
+                }
                 $this->call($route['handler'], $params);
                 return;
             }

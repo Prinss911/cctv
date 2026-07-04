@@ -46,16 +46,17 @@
                 handle: '.handle',
                 animation: 150,
                 ghostClass: 'sortable-ghost',
-                onEnd: function() {
-                    var ids = Array.from(sortable.querySelectorAll('[data-id]')).map(function(el) {
-                        return parseInt(el.dataset.id);
-                    });
-                    fetch(sortable.dataset.url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ids: ids })
-                    }).then(function(r) { if (r.ok) toast('Urutan diperbarui'); });
-                }
+                        onEnd: function() {
+                            var ids = Array.from(sortable.querySelectorAll('[data-id]')).map(function(el) {
+                                return parseInt(el.dataset.id);
+                            });
+                            var csrfToken = document.querySelector('[name=_csrf]')?.value || '';
+                            fetch(sortable.dataset.url, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ ids: ids, _csrf: csrfToken })
+                            }).then(function(r) { if (r.ok) toast('Urutan diperbarui'); });
+                        }
             });
         }
 
@@ -90,7 +91,18 @@
                 if (a) a.close();
             }, 4000);
         });
+
+        initFormSubmit();
     });
+
+    function initFormSubmit() {
+        document.querySelectorAll('.admin-form').forEach(function(form) {
+            form.addEventListener('submit', function() {
+                var btn = form.querySelector('[type=submit]');
+                if (btn) btn.disabled = true;
+            });
+        });
+    }
 
     function toast(msg) {
         var d = document.createElement('div');

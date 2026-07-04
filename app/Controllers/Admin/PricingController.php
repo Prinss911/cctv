@@ -5,7 +5,9 @@ namespace App\Controllers\Admin;
 use App\Middleware\AuthMiddleware;
 use App\Models\PricingModel;
 use App\Models\PricingBrandModel;
-use App\Helpers\{View, Flash, Csrf};
+use App\Helpers\{View, Flash, Csrf, Request};
+use function trim;
+use function array_filter;
 
 class PricingController
 {
@@ -35,24 +37,60 @@ class PricingController
     public function store(): void
     {
         Csrf::verify();
-        $id = $this->model->create([
-            'name'              => trim($_POST['name'] ?? ''),
-            'camera_count'      => (int)($_POST['camera_count'] ?? 0),
-            'price'             => (int)($_POST['price'] ?? 0),
-            'price_original'    => (int)($_POST['price_original'] ?? 0),
-            'description'       => trim($_POST['description'] ?? ''),
-            'whatsapp_message'  => trim($_POST['whatsapp_message'] ?? ''),
-            'is_featured'       => isset($_POST['is_featured']) ? 1 : 0,
-            'is_active'         => isset($_POST['is_active']) ? 1 : 0,
-            'sort_order'        => (int)($_POST['sort_order'] ?? 0),
-            'brand_id'          => !empty($_POST['brand_id']) ? (int)$_POST['brand_id'] : null,
-        ]);
+        
+        // Validate brand_id if provided
+        $brandId = !empty(Request::post('brand_id')) ? (int)Request::post('brand_id') : null;
+        if ($brandId !== null) {
+            $brand = $this->brandModel->find($brandId);
+            if (!$brand) {
+                Flash::set('error', 'Brand tidak ditemukan.');
+                redirect('/admin/pricing/create');
+                exit;
+            }
+        }
 
-        $features = array_filter(explode("\n", $_POST['features'] ?? ''));
+        $cameraCount = (int)Request::post('camera_count', 0);
+        $price = (int)Request::post('price', 0);
+        $priceOriginal = (int)Request::post('price_original', 0);
+
+        // Validate numeric fields >= 0
+        if ($cameraCount < 0) {
+            Flash::set('error', 'Jumlah kamera tidak boleh negatif.');
+            redirect('/admin/pricing/create');
+            exit;
+        }
+        if ($price < 0) {
+            Flash::set('error', 'Harga tidak boleh negatif.');
+            redirect('/admin/pricing/create');
+            exit;
+        }
+        if ($priceOriginal < 0) {
+            Flash::set('error', 'Harga asli tidak boleh negatif.');
+            redirect('/admin/pricing/create');
+            exit;
+        }
+
+        $data = [
+            'name'              => trim(Request::post('name', '')),
+            'camera_count'      => $cameraCount,
+            'price'             => $price,
+            'price_original'    => $priceOriginal,
+            'description'       => trim(Request::post('description', '')),
+            'whatsapp_message'  => trim(Request::post('whatsapp_message', '')),
+            'is_featured'       => Request::has('is_featured') ? 1 : 0,
+            'is_active'         => Request::has('is_active') ? 1 : 0,
+            'sort_order'        => (int)Request::post('sort_order', 0),
+            'brand_id'          => $brandId,
+        ];
+
+        $id = $this->model->create($data);
+
+        $features = array_filter(explode("\n", Request::post('features', '')));
         $this->model->syncFeatures($id, $features);
 
         Flash::set('success', 'Paket berhasil ditambahkan.');
         redirect('/admin/pricing');
+        exit;
     }
 
     public function edit(string $id): void
@@ -61,6 +99,7 @@ class PricingController
         if (!$item) {
             Flash::set('error', 'Paket tidak ditemukan.');
             redirect('/admin/pricing');
+            exit;
         }
         $item['features'] = $this->model->getFeatures((int)$id);
         $brands = $this->brandModel->getActive();
@@ -70,24 +109,37 @@ class PricingController
     public function update(string $id): void
     {
         Csrf::verify();
+        
+        // Validate brand_id if provided
+        $brandId = !empty(Request::post('brand_id')) ? (int)Request::post('brand_id') : null;
+        if ($brandId !== null) {
+            $brand = $this->brandModel->find($brandId);
+            if (!$brand) {
+                Flash::set('error', 'Brand tidak ditemukan.');
+                redirect('/admin/pricing/edit/'.$id);
+                return;
+            }
+        }
+        
         $this->model->update((int)$id, [
-            'name'              => trim($_POST['name'] ?? ''),
-            'camera_count'      => (int)($_POST['camera_count'] ?? 0),
-            'price'             => (int)($_POST['price'] ?? 0),
-            'price_original'    => (int)($_POST['price_original'] ?? 0),
-            'description'       => trim($_POST['description'] ?? ''),
-            'whatsapp_message'  => trim($_POST['whatsapp_message'] ?? ''),
-            'is_featured'       => isset($_POST['is_featured']) ? 1 : 0,
-            'is_active'         => isset($_POST['is_active']) ? 1 : 0,
-            'sort_order'        => (int)($_POST['sort_order'] ?? 0),
-            'brand_id'          => !empty($_POST['brand_id']) ? (int)$_POST['brand_id'] : null,
+            'name'              => trim(Request::post('name', '')),
+            'camera_count'      => (int)Request::post('camera_count', 0),
+            'price'             => (int)Request::post('price', 0),
+            'price_original'    => (int)Request::post('price_original', 0),
+            'description'       => trim(Request::post('description', '')),
+            'whatsapp_message'  => trim(Request::post('whatsapp_message', '')),
+            'is_featured'       => Request::has('is_featured') ? 1 : 0,
+            'is_active'         => Request::has('is_active') ? 1 : 0,
+            'sort_order'        => (int)Request::post('sort_order', 0),
+            'brand_id'          => $brandId,
         ]);
 
-        $features = array_filter(explode("\n", $_POST['features'] ?? ''));
+        $features = array_filter(explode("\n", Request::post('features', '')));
         $this->model->syncFeatures((int)$id, $features);
 
         Flash::set('success', 'Paket berhasil diperbarui.');
         redirect('/admin/pricing');
+        exit;
     }
 
     public function destroy(string $id): void
@@ -96,10 +148,12 @@ class PricingController
         $this->model->delete((int)$id);
         Flash::set('success', 'Paket berhasil dihapus.');
         redirect('/admin/pricing');
+        exit;
     }
 
     public function reorder(): void
     {
+        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $this->model->updateSortOrder($ids);
         header('Content-Type: application/json');
