@@ -55,14 +55,15 @@ if (!function_exists('base_url')) {
             }
         }
 
-        // 2) Use HTTP_HOST if it's a real domain name (not an IP)
+        // 2) Use HTTP_HOST (supports domain names AND IP addresses)
         $host = $_SERVER['HTTP_HOST'] ?? '';
         if ($host !== '') {
             $hostPart = explode(':', $host)[0];
-            if (!filter_var($hostPart, FILTER_VALIDATE_IP)) {
-                if (filter_var($hostPart, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
-                    return $scheme . '://' . rtrim($host, '/');
-                }
+            if (
+                filter_var($hostPart, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ||
+                filter_var($hostPart, FILTER_VALIDATE_IP)
+            ) {
+                return $scheme . '://' . rtrim($host, '/');
             }
         }
 
