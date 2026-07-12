@@ -39,12 +39,18 @@ class Auth
 
         if (!$user || !password_verify($password, $user['password'])) {
             // Record failed attempt for IP-based rate limiting using atomic upsert
-            $db->beginTransaction();
+            // SQLite uses BEGIN IMMEDIATE for write lock (row-level locking via FOR UPDATE not supported)
+            $driver = Database::getDriver();
+            if ($driver === 'sqlite') {
+                $db->exec('BEGIN IMMEDIATE');
+            } else {
+                $db->beginTransaction();
+            }
             try {
                 // Lock the row for this IP/email combo
                 $stmt = $db->prepare(
                     "SELECT attempted_at, lockout_until FROM login_attempts 
-                     WHERE ip_address = ? AND email = ? FOR UPDATE"
+                     WHERE ip_address = ? AND email = ?"
                 );
                 $stmt->execute([$ipAddress, $email]);
                 $row = $stmt->fetch(PDO::FETCH_ASSOC);
