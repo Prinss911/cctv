@@ -38,6 +38,9 @@ RUN { \
     echo '# Ensure storage directories exist (db, sessions)'; \
     echo 'mkdir -p /var/www/html/storage/db /var/www/html/storage/sessions'; \
     echo ''; \
+    echo '# Fix ownership on mounted volumes (NAS mount does not inherit image permissions)'; \
+    echo 'chown -R www-data:www-data /var/www/html/storage/sessions /var/www/html/storage/db'; \
+    echo ''; \
     echo '# Run migration only if the database does not exist yet'; \
     echo 'if [ ! -f /var/www/html/storage/db/app.db ]; then'; \
     echo '    echo "*** First start: running database migration with seeder... ***"'; \
