@@ -31,7 +31,12 @@ class SliderController
     public function store(): void
     {
         Csrf::verify();
-        $result = Upload::handle(Request::file('image'), 'sliders');
+        $imageUrl = trim(Request::post('image_url', ''));
+        if (!empty($imageUrl)) {
+            $result = Upload::handleFromUrl($imageUrl, 'sliders');
+        } else {
+            $result = Upload::handle(Request::file('image'), 'sliders');
+        }
         
         if (isset($result['error'])) {
             Flash::set('error', $result['error']);
@@ -78,7 +83,19 @@ class SliderController
             'is_active'   => Request::has('is_active') ? 1 : 0,
         ];
 
-        if (!empty(Request::file('image')['name'] ?? '')) {
+        $imageUrl = trim(Request::post('image_url', ''));
+        if (!empty($imageUrl)) {
+            $result = Upload::handleFromUrl($imageUrl, 'sliders');
+            if (isset($result['path'])) {
+                $old = $this->model->find((int)$id);
+                if ($old && $old['image']) Upload::delete($old['image']);
+                $data['image'] = $result['path'];
+            } elseif (isset($result['error'])) {
+                Flash::set('error', $result['error']);
+                redirect('/admin/sliders/edit/' . $id);
+                exit;
+            }
+        } elseif (!empty(Request::file('image')['name'] ?? '')) {
             $result = Upload::handle(Request::file('image'), 'sliders');
             if (isset($result['path'])) {
                 $old = $this->model->find((int)$id);

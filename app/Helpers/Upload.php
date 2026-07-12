@@ -198,6 +198,198 @@ class Upload
         return ['error' => 'Gagal memindahkan file yang diupload.'];
     }
 
+    /**
+     * Handle image upload from URL
+     * Downloads image from URL, validates it, and saves to uploads directory
+     * Returns array with 'path' on success, or ['error' => message] on failure
+     */
+    public static function handleFromUrl(string $url, string $directory): array
+    {
+        // Validate directory parameter
+        if (empty($directory) || !is_string($directory)) {
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Direktori upload tidak valid.'];
+        }
+
+        // Validate URL format
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'URL tidak valid.'];
+        }
+
+        // Only allow http/https protocols
+        $parsedUrl = parse_url($url);
+        if (!isset($parsedUrl['scheme']) || !in_array(strtolower($parsedUrl['scheme']), ['http', 'https'])) {
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Hanya protokol HTTP dan HTTPS yang diizinkan.'];
+        }
+
+        // Create stream context for downloading
+        $context = stream_context_create([
+            'http' => [
+                'timeout' => 15,
+                'user_agent' => 'BayuCCTV/1.0',
+                'follow_location' => 1,
+                'max_redirects' => 5,
+            ],
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ],
+        ]);
+
+        // Download the file
+        $imageData = @file_get_contents($url, false, $context);
+        if ($imageData === false) {
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Gagal mengunduh gambar dari URL.'];
+        }
+
+        // Save to temp file
+        $tempFile = tempnam(sys_get_temp_dir(), 'url_upload_');
+        if ($tempFile === false) {
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Gagal membuat file temporary.'];
+        }
+
+        $written = file_put_contents($tempFile, $imageData);
+        if ($written === false) {
+            unlink($tempFile);
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Gagal menyimpan file temporary.'];
+        }
+
+        $config = require BASE_PATH . '/config/storage.php';
+
+        // Check file size against config
+        $fileSize = filesize($tempFile);
+        if ($fileSize > $config['max_size']) {
+            unlink($tempFile);
+            $maxMB = $config['max_size'] / (1024 * 1024);
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => "Ukuran file terlalu besar. Maksimal {$maxMB}MB."];
+        }
+
+        // Validate minimum file size
+        if ($fileSize < 1) {
+            unlink($tempFile);
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'File kosong tidak diperbolehkan.'];
+        }
+
+        // Validate MIME type
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $tempFile);
+        finfo_close($finfo);
+
+        if (!in_array($mimeType, $config['allowed_types'])) {
+            unlink($tempFile);
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Tipe file tidak diizinkan. Gunakan JPG, PNG, WebP, atau GIF.'];
+        }
+
+        // Get expected extension from MIME type
+        $extension = self::getExtension($mimeType);
+
+        // Content integrity check for images
+        if (str_starts_with($mimeType, 'image/')) {
+            $imageInfo = @getimagesize($tempFile);
+            if ($imageInfo === false) {
+                unlink($tempFile);
+                SecurityLogger::logUpload('url_upload', false);
+                return ['error' => 'File tidak valid atau gambar rusak.'];
+            }
+
+            // Validate image dimensions
+            $width = $imageInfo[0] ?? 0;
+            $height = $imageInfo[1] ?? 0;
+            if ($width > self::MAX_IMAGE_DIMENSION || $height > self::MAX_IMAGE_DIMENSION) {
+                unlink($tempFile);
+                SecurityLogger::logUpload('url_upload', false);
+                return ['error' => "Ukuran gambar terlalu besar. Maksimal " . self::MAX_IMAGE_DIMENSION . "x" . self::MAX_IMAGE_DIMENSION . " piksel."];
+            }
+
+            if ($width < 1 || $height < 1) {
+                unlink($tempFile);
+                SecurityLogger::logUpload('url_upload', false);
+                return ['error' => 'File gambar tidak valid.'];
+            }
+        }
+
+        // Generate random filename
+        $filename = uniqid() . '_' . time() . '.' . $extension;
+
+        // Validate filename contains only safe characters
+        if (!preg_match('/^[\w\-\.]+$/', $filename)) {
+            unlink($tempFile);
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Nama file tidak valid.'];
+        }
+
+        try {
+            $sanitizedDirectory = self::sanitizePath($directory);
+        } catch (\InvalidArgumentException $e) {
+            unlink($tempFile);
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Direktori upload tidak valid: ' . $e->getMessage()];
+        }
+
+        $uploadDir = $config['uploads_path'] . '/' . $sanitizedDirectory;
+
+        // Ensure the upload directory is within the configured uploads path
+        $realUploadDir = realpath($config['uploads_path']);
+        if ($realUploadDir === false) {
+            unlink($tempFile);
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Konfigurasi path upload tidak valid.'];
+        }
+
+        if (!is_dir($uploadDir)) {
+            if (!mkdir($uploadDir, 0755, true)) {
+                unlink($tempFile);
+                SecurityLogger::logUpload('url_upload', false);
+                return ['error' => 'Gagal membuat direktori upload.'];
+            }
+        }
+
+        $realUploadSubDir = realpath($uploadDir);
+        if ($realUploadSubDir === false || strpos($realUploadSubDir, $realUploadDir) !== 0) {
+            unlink($tempFile);
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Path upload tidak valid.'];
+        }
+
+        $destination = $uploadDir . '/' . $filename;
+
+        // Use copy() then unlink() for cross-filesystem safety
+        if (copy($tempFile, $destination)) {
+            unlink($tempFile);
+
+            // Log successful upload
+            SecurityLogger::logUpload(basename($url), true);
+
+            // Generate thumbnails for images if GD or Imagick is available
+            $thumbnails = [];
+            if (str_starts_with($mimeType, 'image/') && (extension_loaded('gd') || extension_loaded('imagick'))) {
+                $thumbnails = self::generateThumbnails($destination, $sanitizedDirectory, $filename, $extension);
+            }
+
+            $result = ['path' => $sanitizedDirectory . '/' . $filename];
+            if (!empty($thumbnails)) {
+                $result['thumbnails'] = $thumbnails;
+            }
+            return $result;
+        }
+
+        // Clean up temp file on failure
+        unlink($tempFile);
+
+        // Log failed upload
+        SecurityLogger::logUpload('url_upload', false);
+
+        return ['error' => 'Gagal menyimpan file yang diunduh.'];
+    }
+
     public static function delete(string $path): bool
     {
         $config = require BASE_PATH . '/config/storage.php';

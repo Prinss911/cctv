@@ -12,3 +12,20 @@ vendor/
 .DS_Store
 Thumbs.db
 *.swp
+
+# Junk / debug files
+cookies.txt
+cookies2.txt
+cookies3.txt
+*.png
+*.jpg
+*.jpeg
+*.bmp
+router.php
+start-php-server.ps1
+start-php.bat
+start-php.ps1
+php-server.log
+database/database.sqlite
+.omo/
+.playwright-mcp/

@@ -31,7 +31,12 @@ class ClientController
     public function store(): void
     {
         Csrf::verify();
-        $result = Upload::handle(Request::file('logo'), 'clients');
+        $logoUrl = trim(Request::post('logo_url', ''));
+        if (!empty($logoUrl)) {
+            $result = Upload::handleFromUrl($logoUrl, 'clients');
+        } else {
+            $result = Upload::handle(Request::file('logo'), 'clients');
+        }
         
         if (isset($result['error'])) {
             Flash::set('error', $result['error']);
@@ -73,7 +78,19 @@ class ClientController
             'is_active'  => Request::has('is_active') ? 1 : 0,
         ];
 
-        if (!empty(Request::file('logo')['name'] ?? '')) {
+        $logoUrl = trim(Request::post('logo_url', ''));
+        if (!empty($logoUrl)) {
+            $result = Upload::handleFromUrl($logoUrl, 'clients');
+            if (isset($result['path'])) {
+                $old = $this->model->find((int)$id);
+                if ($old && $old['logo']) Upload::delete($old['logo']);
+                $data['logo'] = $result['path'];
+            } elseif (isset($result['error'])) {
+                Flash::set('error', $result['error']);
+                redirect('/admin/clients/edit/' . $id);
+                exit;
+            }
+        } elseif (!empty(Request::file('logo')['name'] ?? '')) {
             $result = Upload::handle(Request::file('logo'), 'clients');
             if (isset($result['path'])) {
                 $old = $this->model->find((int)$id);

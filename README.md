@@ -21,7 +21,7 @@ Website company profile profesional untuk jasa pemasangan CCTV, dibangun dengan 
 - **Security Event Logging** — Semua event keamanan tercatat di `storage/logs/security.log` dengan detail terstruktur
 - **Dynamic Base URL** — Otomatis deteksi protokol, host, dan port, support proxy/CDN (Cloudflare, nginx)
 - **Docker Support** — Production-ready Docker image dengan PHP 8.2 + Apache + SQLite3, entrypoint auto-migration
-- **Sistem Migrasi** — Skrip migrasi dengan dukungan `--fresh` dan `--seed`
+- **Sistem Migrasi** — Skrip migrasi dengan dukungan `--fresh`, `--seed`, dan reset data
 
 ---
 
@@ -127,6 +127,8 @@ php database/migrate.php --seed
 ```
 
 Perintah ini akan membuat semua tabel dan mengisi data awal (termasuk akun admin, contoh slider, paket harga, dan testimoni).
+
+**Catatan:** Proyek ini pernah menjalani fresh data reset pada v1.2.0 (2026-07-13). Data database dan file upload dihapus sepenuhnya, lalu di-migrate ulang dengan data awal.
 
 ### 5. Jalankan Development Server
 

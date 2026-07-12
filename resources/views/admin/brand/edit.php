@@ -14,6 +14,11 @@
             <input type="file" class="form-control" id="logo" name="logo" accept="image/jpeg,image/png,image/webp,image/gif">
             <div class="form-text">Kosongkan jika tidak ingin mengganti logo.</div>
         </div>
+        <div class="mb-3">
+            <label class="form-label">Atau URL Logo</label>
+            <input type="url" class="form-control" name="logo_url" placeholder="https://example.com/logo.png">
+            <div class="form-text">Isi jika ingin menggunakan URL, kosongkan jika upload file.</div>
+        </div>
         <div class="row"><div class="col-md-4 mb-3"><label class="form-label">Urutan</label><input type="number" class="form-control" name="sort_order" value="<?= (int)$brand['sort_order'] ?>" min="0"></div><div class="col-md-4 mb-3 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" <?= $brand['is_active'] ? 'checked' : '' ?>><label class="form-check-label" for="is_active">Aktif</label></div></div></div>
         <button type="submit" class="btn-admin btn-admin-fill"><i class="fas fa-check"></i> Simpan</button>
     </form>

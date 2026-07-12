@@ -39,7 +39,16 @@ class TestimonialController
             'is_active'     => Request::has('is_active') ? 1 : 0,
         ];
 
-        if (!empty(Request::file('screenshot')['name'] ?? '')) {
+        $screenshotUrl = trim(Request::post('screenshot_url', ''));
+        if (!empty($screenshotUrl)) {
+            $result = Upload::handleFromUrl($screenshotUrl, 'testimonials');
+            if (isset($result['error'])) {
+                Flash::set('error', $result['error']);
+                redirect('/admin/testimonials/create');
+                exit;
+            }
+            $data['screenshot'] = $result['path'];
+        } elseif (!empty(Request::file('screenshot')['name'] ?? '')) {
             $result = Upload::handle(Request::file('screenshot'), 'testimonials');
             if (isset($result['error'])) {
                 Flash::set('error', $result['error']);
@@ -78,7 +87,20 @@ class TestimonialController
             'is_active'     => Request::has('is_active') ? 1 : 0,
         ];
 
-        if (!empty(Request::file('screenshot')['name'] ?? '')) {
+        $screenshotUrl = trim(Request::post('screenshot_url', ''));
+        if (!empty($screenshotUrl)) {
+            $result = Upload::handleFromUrl($screenshotUrl, 'testimonials');
+            if (isset($result['error'])) {
+                Flash::set('error', $result['error']);
+                redirect('/admin/testimonials/edit/' . $id);
+                exit;
+            }
+            if (isset($result['path'])) {
+                $old = $this->model->find((int)$id);
+                if ($old && $old['screenshot']) Upload::delete($old['screenshot']);
+                $data['screenshot'] = $result['path'];
+            }
+        } elseif (!empty(Request::file('screenshot')['name'] ?? '')) {
             $result = Upload::handle(Request::file('screenshot'), 'testimonials');
             if (isset($result['error'])) {
                 Flash::set('error', $result['error']);

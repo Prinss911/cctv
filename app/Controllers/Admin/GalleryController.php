@@ -31,7 +31,12 @@ class GalleryController
     public function store(): void
     {
         Csrf::verify();
-        $result = Upload::handle(Request::file('image'), 'gallery');
+        $imageUrl = trim(Request::post('image_url', ''));
+        if (!empty($imageUrl)) {
+            $result = Upload::handleFromUrl($imageUrl, 'gallery');
+        } else {
+            $result = Upload::handle(Request::file('image'), 'gallery');
+        }
         
         if (isset($result['error'])) {
             Flash::set('error', $result['error']);
@@ -73,7 +78,19 @@ class GalleryController
             'is_active'  => Request::has('is_active') ? 1 : 0,
         ];
 
-        if (!empty(Request::file('image')['name'] ?? '')) {
+        $imageUrl = trim(Request::post('image_url', ''));
+        if (!empty($imageUrl)) {
+            $result = Upload::handleFromUrl($imageUrl, 'gallery');
+            if (isset($result['path'])) {
+                $old = $this->model->find((int)$id);
+                if ($old && $old['image']) Upload::delete($old['image']);
+                $data['image'] = $result['path'];
+            } elseif (isset($result['error'])) {
+                Flash::set('error', $result['error']);
+                redirect('/admin/gallery/edit/' . $id);
+                exit;
+            }
+        } elseif (!empty(Request::file('image')['name'] ?? '')) {
             $result = Upload::handle(Request::file('image'), 'gallery');
             if (isset($result['path'])) {
                 $old = $this->model->find((int)$id);

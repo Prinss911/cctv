@@ -4,6 +4,11 @@
         <?= \App\Helpers\Csrf::field() ?>
         <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Nama Brand <span class="text-danger">*</span></label><input type="text" class="form-control" name="name" required></div><div class="col-md-6 mb-3"><label class="form-label">Slug <span class="text-danger">*</span></label><input type="text" class="form-control" name="slug" placeholder="Otomatis dari nama"></div></div>
         <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Logo</label><input type="file" class="form-control" id="logo" name="logo" accept="image/jpeg,image/png,image/webp,image/gif"><div class="form-text">Format: JPG, PNG, WebP, GIF. Maks 5MB.</div></div></div>
+        <div class="mb-3">
+            <label class="form-label">Atau URL Logo</label>
+            <input type="url" class="form-control" name="logo_url" placeholder="https://example.com/logo.png">
+            <div class="form-text">Atau masukkan URL logo dari internet.</div>
+        </div>
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label">Urutan</label>

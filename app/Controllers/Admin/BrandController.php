@@ -51,18 +51,30 @@ class BrandController
         }
 
         // Handle logo upload (optional)
-        $result = Upload::handle(Request::file('logo'), 'logo');
+        $logoUrl = trim(Request::post('logo_url', ''));
         $logoPath = null;
-        
-        if (isset($result['error'])) {
-            // Only show error if a file was actually selected but failed
-            if (Request::file('logo') !== null && Request::file('logo')['error'] !== UPLOAD_ERR_NO_FILE) {
+
+        if (!empty($logoUrl)) {
+            $result = Upload::handleFromUrl($logoUrl, 'logo');
+            if (isset($result['error'])) {
                 Flash::set('error', $result['error']);
                 redirect('/admin/brands/create');
                 return;
             }
-        } elseif (isset($result['path'])) {
             $logoPath = $result['path'];
+        } else {
+            $result = Upload::handle(Request::file('logo'), 'logo');
+            
+            if (isset($result['error'])) {
+                // Only show error if a file was actually selected but failed
+                if (Request::file('logo') !== null && Request::file('logo')['error'] !== UPLOAD_ERR_NO_FILE) {
+                    Flash::set('error', $result['error']);
+                    redirect('/admin/brands/create');
+                    return;
+                }
+            } elseif (isset($result['path'])) {
+                $logoPath = $result['path'];
+            }
         }
 
         $id = $this->brandModel->create([
@@ -118,17 +130,29 @@ class BrandController
         }
 
         // Handle logo upload (optional)
+        $logoUrl = trim(Request::post('logo_url', ''));
         $uploadLogo = null;
-        $result = Upload::handle(Request::file('logo'), 'logo');
-        
-        if (isset($result['error'])) {
-            if (Request::file('logo') !== null && Request::file('logo')['error'] !== UPLOAD_ERR_NO_FILE) {
+
+        if (!empty($logoUrl)) {
+            $result = Upload::handleFromUrl($logoUrl, 'logo');
+            if (isset($result['error'])) {
                 Flash::set('error', $result['error']);
                 redirect("/admin/brands/{$id}/edit");
                 return;
             }
-        } elseif (isset($result['path'])) {
             $uploadLogo = $result['path'];
+        } else {
+            $result = Upload::handle(Request::file('logo'), 'logo');
+            
+            if (isset($result['error'])) {
+                if (Request::file('logo') !== null && Request::file('logo')['error'] !== UPLOAD_ERR_NO_FILE) {
+                    Flash::set('error', $result['error']);
+                    redirect("/admin/brands/{$id}/edit");
+                    return;
+                }
+            } elseif (isset($result['path'])) {
+                $uploadLogo = $result['path'];
+            }
         }
 
         // Determine final logo path

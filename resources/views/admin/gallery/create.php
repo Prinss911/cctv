@@ -4,6 +4,11 @@
         <?= \App\Helpers\Csrf::field() ?>
         <div class="mb-3"><label class="form-label">Judul</label><input type="text" class="form-control" name="title"></div>
         <div class="mb-3"><label class="form-label">Gambar <span class="text-danger">*</span></label><input type="file" class="form-control" name="image" accept="image/*" required><div class="form-text">JPG, PNG, WebP. Maks 5MB.</div></div>
+        <div class="mb-3">
+            <label class="form-label">Atau URL Gambar</label>
+            <input type="url" class="form-control" name="image_url" placeholder="https://example.com/gambar.jpg">
+            <div class="form-text">Atau masukkan URL gambar dari internet.</div>
+        </div>
         <div class="row">
             <div class="col-md-4 mb-3"><label class="form-label">Kategori</label><select class="form-select" name="category"><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option><option value="detail">Detail</option><option value="team">Tim</option></select></div>
             <div class="col-md-4 mb-3"><label class="form-label">Urutan</label><input type="number" class="form-control" name="sort_order" value="0" min="0"></div>

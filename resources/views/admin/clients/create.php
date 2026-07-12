@@ -19,6 +19,11 @@
                 <div class="form-text">Format: JPG, PNG, WebP, SVG. Maks 5MB. Rekomendasi: background transparan (PNG).</div>
             </div>
             <div class="mb-3">
+                <label for="logo_url" class="form-label">Atau URL Logo</label>
+                <input type="url" class="form-control" id="logo_url" name="logo_url" placeholder="https://example.com/logo.png">
+                <div class="form-text">Atau masukkan URL logo dari internet.</div>
+            </div>
+            <div class="mb-3">
                 <label for="website" class="form-label">Website</label>
                 <input type="url" class="form-control" id="website" name="website" placeholder="https://example.com">
             </div>

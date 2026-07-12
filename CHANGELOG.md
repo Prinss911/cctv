@@ -21,6 +21,24 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 - docker-compose: bridge network, restart policy `unless-stopped`, bind mount `.env` read-only
 - Dynamic URL: support `HTTP_X_FORWARDED_HOST`, `HTTPS`, `SERVER_PORT` auto-detection
 
+## [1.2.0] - 2026-07-13
+
+### Ditambahkan
+- **Upload Gambar via URL** — Setiap modul (Slider, Gallery, Brand, Client, Testimonial) kini mendukung upload gambar melalui URL internet sebagai alternatif upload file
+- `Upload::handleFromUrl()` — Method baru di `Upload.php` untuk mendownload gambar dari URL, dengan validasi keamanan berlapis (MIME type via finfo, dimensi max 4000px, ukuran max 5MB, getimagesize(), path traversal protection, filename acak, thumbnail generation)
+- **Field input URL** — Setiap halaman create/edit admin panel kini memiliki input URL gambar di samping upload file (image_url, logo_url, screenshot_url)
+
+### Diubah
+- **Fresh data reset** — Semua data database dan file upload dihapus sepenuhnya; migrasi dijalankan ulang dengan data awal (default values, akun admin, contoh slider, paket harga, testimoni)
+
+### Detail Teknis
+- `Upload::handleFromUrl()` menggunakan `file_get_contents()` dengan stream context timeout 15s, user-agent 'BayuCCTV/1.0', follow redirects
+- Temp file di `sys_get_temp_dir()` di-unlink pada setiap jalur error sebelum return
+- Copy + unlink untuk cross-filesystem safety (bukan move_uploaded_file yang khusus upload form)
+- Prioritas: URL lebih diutamakan daripada file upload jika keduanya diisi
+- Semua 5 controller (Slider, Gallery, Brand, Client, Testimonial) diubah di store() dan update()
+- 10 view files diubah (create + edit untuk masing-masing modul)
+
 ## [Unreleased]
 
 ### Ditambahkan

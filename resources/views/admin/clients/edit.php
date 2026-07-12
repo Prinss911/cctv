@@ -25,6 +25,11 @@
                 <div class="form-text">Kosongkan jika tidak ingin mengganti logo.</div>
             </div>
             <div class="mb-3">
+                <label for="logo_url" class="form-label">Atau URL Logo</label>
+                <input type="url" class="form-control" id="logo_url" name="logo_url" placeholder="https://example.com/logo.png">
+                <div class="form-text">Isi jika ingin menggunakan URL, kosongkan jika upload file.</div>
+            </div>
+            <div class="mb-3">
                 <label for="website" class="form-label">Website</label>
                 <input type="url" class="form-control" id="website" name="website" value="<?= e($item['website']) ?>" placeholder="https://example.com">
             </div>
