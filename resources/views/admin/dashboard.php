@@ -1,6 +1,6 @@
 <div class="page-head">
     <h4 class="page-title">Dashboard</h4>
-    <span style="font-size:0.78rem;color:var(--text-muted);font-weight:500;letter-spacing:0.03em"><?= date('l, d F Y') ?></span>
+    <span style="font-size:0.78rem;color:var(--text-muted);font-weight:500;letter-spacing:0.03em"><?php $hari = ['Sunday'=>'Minggu','Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>"Jum'at",'Saturday'=>'Sabtu']; $bulan = ['January'=>'Januari','February'=>'Februari','March'=>'Maret','April'=>'April','May'=>'Mei','June'=>'Juni','July'=>'Juli','August'=>'Agustus','September'=>'September','October'=>'Oktober','November'=>'November','December'=>'Desember']; echo $hari[date('l')] . ', ' . date('d') . ' ' . $bulan[date('F')] . ' ' . date('Y'); ?></span>
 </div>
 
 <div class="welcome-banner">
