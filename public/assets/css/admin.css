@@ -918,3 +918,8 @@ h1, h2, h3, h4, h5, h6 {
     }
     .settings-tabs .nav-link { padding: 0.65rem 1.5rem; }
 }
+
+/* ---- Utilities ---- */
+@media (min-width: 768px) {
+    .w-auto-md { width: auto !important; }
+}
