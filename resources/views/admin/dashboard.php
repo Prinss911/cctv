@@ -14,7 +14,7 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-xl col-md-4 col-6">
+    <div class="col-xl col-md-6 col-12">
         <div class="stat-admin c-blue">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
@@ -75,32 +75,32 @@
     <div class="card-header">Aksi Cepat</div>
     <div class="card-body">
         <div class="row g-2">
-            <div class="col-md-4 col-6">
+            <div class="col-md-6 col-12">
                 <a href="<?= url('/admin/sliders/create') ?>" class="quick-action">
                     <i class="fas fa-plus"></i>Tambah Slider
                 </a>
             </div>
-            <div class="col-md-4 col-6">
+            <div class="col-md-6 col-12">
                 <a href="<?= url('/admin/pricing/create') ?>" class="quick-action">
                     <i class="fas fa-plus"></i>Tambah Paket
                 </a>
             </div>
-            <div class="col-md-4 col-6">
+            <div class="col-md-6 col-12">
                 <a href="<?= url('/admin/gallery/create') ?>" class="quick-action">
                     <i class="fas fa-plus"></i>Tambah Foto
                 </a>
             </div>
-            <div class="col-md-4 col-6">
+            <div class="col-md-6 col-12">
                 <a href="<?= url('/admin/testimonials/create') ?>" class="quick-action">
                     <i class="fas fa-plus"></i>Tambah Testimoni
                 </a>
             </div>
-            <div class="col-md-4 col-6">
+            <div class="col-md-6 col-12">
                 <a href="<?= url('/admin/clients/create') ?>" class="quick-action">
                     <i class="fas fa-plus"></i>Tambah Client
                 </a>
             </div>
-            <div class="col-md-4 col-6">
+            <div class="col-md-6 col-12">
                 <a href="<?= url('/admin/settings') ?>" class="quick-action">
                     <i class="fas fa-sliders"></i>Pengaturan
                 </a>

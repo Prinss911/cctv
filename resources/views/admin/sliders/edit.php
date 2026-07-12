@@ -14,8 +14,8 @@
             <input type="url" class="form-control" name="image_url" placeholder="https://example.com/gambar.jpg">
             <div class="form-text">Isi jika ingin menggunakan URL, kosongkan jika upload file.</div>
         </div>
-        <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Teks Tombol</label><input type="text" class="form-control" name="button_text" value="<?= e($item['button_text']) ?>"></div><div class="col-md-6 mb-3"><label class="form-label">URL Tombol</label><input type="text" class="form-control" name="button_url" value="<?= e($item['button_url']) ?>"></div></div>
-        <div class="row"><div class="col-md-6 mb-3"><label class="form-label">Urutan</label><input type="number" class="form-control" name="sort_order" value="<?= (int)$item['sort_order'] ?>" min="0"></div><div class="col-md-6 mb-3 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" <?= $item['is_active'] ? 'checked' : '' ?>><label class="form-check-label" for="is_active">Aktif</label></div></div></div>
-        <button type="submit" class="btn-admin btn-admin-fill"><i class="fas fa-check"></i> Simpan</button>
+<div class="row"><div class="col-12 col-md-6 mb-3"><label class="form-label">Teks Tombol</label><input type="text" class="form-control" name="button_text" value="<?= e($item['button_text']) ?>"></div><div class="col-12 col-md-6 mb-3"><label class="form-label">URL Tombol</label><input type="text" class="form-control" name="button_url" value="<?= e($item['button_url']) ?>"></div></div>
+<div class="row"><div class="col-12 col-md-6 mb-3"><label class="form-label">Urutan</label><input type="number" class="form-control" name="sort_order" value="<?= (int)$item['sort_order'] ?>" min="0"></div><div class="col-12 col-md-6 mb-3 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" <?= $item['is_active'] ? 'checked' : '' ?>><label class="form-check-label" for="is_active">Aktif</label></div></div></div>
+        <button type="submit" class="btn-admin btn-admin-fill w-100 w-auto-md"><i class="fas fa-check"></i> Simpan</button>
     </form>
 </div></div>

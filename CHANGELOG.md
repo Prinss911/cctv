@@ -39,67 +39,29 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 - Semua 5 controller (Slider, Gallery, Brand, Client, Testimonial) diubah di store() dan update()
 - 10 view files diubah (create + edit untuk masing-masing modul)
 
-## [Unreleased]
+## [1.3.0] - 2026-07-13
 
 ### Ditambahkan
-- **Sistem Otorisasi RBAC** — Implementasi kontrol akses berbasis peran dengan 3 level (admin, editor, viewer), `RbacMiddleware`, dan helper `Auth::hasRole()`
-- **Idle Timeout Middleware** — Auto-logout otomatis setelah 30 menit tidak ada aktivitas, konfigurasi `IDLE_TIMEOUT=1800` di `config/app.php`, lengkap dengan notifikasi flash message
-- **Security Event Logger** — `App\Helpers\SecurityLogger` untuk mencatat aktivitas keamanan ke `storage/logs/security.log`, mencakup event login, upload, akses ilegal, CSRF, path traversal, dan perubahan role
-- **Proteksi Path Traversal** — `Upload::sanitizePath()` untuk memfilter null bytes, `../`, `./`, dan absolute paths, serta membatasi karakter hanya `[\w\-\.]`
-- **Pengecekan Ekstensi Terlarang** — Menolak upload file dengan ekstensi berbahaya seperti `.php`, `.pht`, `.phtml`, `.phar`, `.htaccess`, dll.
-- **Integritas Konten Gambar** — Verifikasi menggunakan `getimagesize()` untuk memastikan file benar-benar gambar melampaui pengecekan MIME type
-- **Batas Dimensi Gambar** — Pembatasan maksimum dimensi gambar 4000x4000 px
-- **Generasi Thumbnail** — Auto-generasi thumbnail dengan ukuran 400, 800, 1200, dan 1600 px menggunakan GD library
-- **Konsistensi MIME-Ekstensi** — Validasi agar ekstensi file yang diupload sesuai dengan tipe MIME yang terdeteksi
-- **Metode BaseModel::delete()** — Penambahan metode hapus standar pada base model
-- **Route Logout Admin** — Penambahan route logout admin pada `GET /admin/logout`
+- **Admin Panel Full-Width** — `.admin-content` kini full-width tanpa batas `max-width: 1200px`; padding responsif menggunakan `clamp()` menyesuaikan lebar layar
+- **Responsive Breakpoints Komprehensif** — 6 breakpoint: 576px (HP kecil), 768px (tablet), 991px (desktop kecil), 1400px (layar besar), 1920px (ultrawide)
+- **Tabel Scroll Horizontal di Mobile** — Semua tabel admin bisa discroll horizontal di layar <768px
+- **Sidebar Overlay Mobile** — Sidebar toggle menggunakan overlay di mobile, support class `.show` dan `.open`
 
 ### Diperbaiki
-- **Race Condition Rate Limiting** — Migrasi penyimpanan dari `$_SESSION` ke tabel `auth_attempts` dengan `EXCLUSIVE` SQLite transaction lock
-- **Rotasi Token CSRF untuk AJAX** — Token hanya dirotasi pada POST halaman penuh, dengan validasi fallback ke token sebelumnya untuk request XHR
-- **Type Error Flash::success()** — Perbaikan pada controller yang memanggil metode `Flash::success()` yang sebelumnya tidak terdefinisi
-- **Kompatibilitas PHP 8.0** — Penambahan polyfill untuk `str_starts_with`
-
-### Diubah
-- **Penyimpanan Rate Limiting** — Dari berbasis sesi menjadi tabel database `auth_attempts` dengan pelacakan IP dan username
-- **Kebijakan Rotasi Token CSRF** — Dari rotasi setiap POST menjadi rotasi hanya pada POST halaman penuh
-- **Validasi Path Upload::delete()** — Penambahan pengecekan `sanitizePath()` sebelum proses penghapusan file
+- **UI Admin terlalu kecil di layar besar** — Dulu terkekang `max-width: 1200px`, sekarang memenuhi layar
+- **FOR UPDATE SQLite incompatible** — Diganti dengan `BEGIN IMMEDIATE` untuk atomic rate limiting
+- **base_url() skip IP address** — Sekarang mendeteksi IP address di HTTP_HOST, bukan cuma domain name
+- **CSRF token mismatch di Docker** — Session file tidak writable karena entrypoint tidak chown `storage/sessions/`
+- **Sidebar toggle tidak konsisten** — CSS pakai class `.show`, JS pakai `.open`; sekarang keduanya didukung
 
 ### Detail Teknis
-- **SecurityLogger**: Implementasi metode logging terstruktur untuk audit trail keamanan
-- **RBAC Flow**: Integrasi middleware untuk pengecekan role sebelum akses controller
-- **Idle Timeout**: Implementasi timestamp aktivitas terakhir di sesi dan pengecekan middleware
-- **Upload Validation**: Layer validasi berlapis (MIME -> Extension -> Content -> Dimensions -> Path Sanitization)
-
-### Ditambahkan
-- **Upload Logo Brand CRUD** — Dukungan upload file penuh untuk logo brand di admin panel
-- `BrandController::store()` — Menangani upload file via `Upload::handle()` dengan validasi (5MB, JPEG/PNG/WebP/GIF)
-- `BrandController::update()` — Menangani upload logo baru + menghapus logo lama via `Upload::delete()`
-- `BrandController::destroy()` — Menghapus file logo sebelum brand dihapus
-- `resources/views/admin/brand/create.php` — Input file dengan tipe accept, form enctype multipart/form-data
-- `resources/views/admin/brand/edit.php` — Preview logo saat ini + input file untuk penggantian
-- **User admin kedua** — `admin2@bayucctv.com` / `admin` ditambahkan via seeder
-
-### Diperbaiki
-- **Konektivitas Cloudflare tunnel** — Memperbaiki binding PHP server ke IPv4 (`0.0.0.0:8000`) bukan IPv6-only (`::1:8000`), agar cloudflared bisa konek dengan benar
-- **Generasi URL Asset/Upload untuk tunnel** — Update helper di `bootstrap/app.php` (`asset()`, `upload_url()`, `url()`) mendeteksi `HTTP_X_FORWARDED_HOST` untuk generate URL HTTPS yang benar di belakang Cloudflare tunnel
-- **Perluasan layout gambar Hero/Slider** — Menambahkan batasan CSS max-height:
-  - `#heroCarousel`, `.carousel-inner` — `max-height: 90vh` / `max-height: 900px` (desktop), `700px` (mobile)
-  - `.hero-slide` — `max-height: 90vh` / `900px` desktop, `700px` mobile, `object-fit: cover`
-- **Overflow logo header (navbar)** — `.nav-brand img` dibatasi `max-height: 36px`, `width: auto`, `object-fit: contain`
-- **Overflow logo footer** — `.site-footer img[height="30"]`, `.footer-brand img` dibatasi `max-height: 30px`
-- **Overflow logo tab brand** — `.brand-tabs .nav-link img` dibatasi `max-height: 24px`, `max-width: 80px`, `object-fit: contain`
-- **URL tampil logo brand** — Memperbaiki daftar brand admin (`index.php`) dan tab brand halaman utama (`index.php`) menggunakan path `/uploads/` yang benar (sebelumnya salah pakai `/uploads/logo/`)
-
-### Diubah
-- **Path storage logo brand** — Logo sekarang disimpan sebagai `logo/filename.ext` di database, ditampilkan via `url('/uploads/' . $brand['logo'])`
-- **Command PHP development server** — Diubah dari `php -S localhost:8000 -t public` ke `php -S 0.0.0.0:8000 -t public` untuk binding IPv4 yang benar
-
-### Detail Teknis
-- Validasi upload: max 5MB, tipe MIME yang diizinkan (image/jpeg, image/png, image/webp, image/gif) via `finfo` di `Upload::handle()`
-- Penamaan file: `uniqid()_timestamp.ext` untuk keamanan
-- Lokasi storage: `public/uploads/logo/`
-- URL tunnel: Acak setiap restart (Quick Tunnel), contoh: `https://trademarks-coordinated-pet-superior.trycloudflare.com`
+- CSS: `max-width: 1200px` → `max-width: 100%` + `clamp(1rem, 3vw, 3rem)` padding
+- Breakpoint 576px: stat cards stack 1 per row, quick actions full-width, tombol full-width
+- Breakpoint 768px-991px: sidebar overlay, tabel scroll, admin cards overflow handling
+- Breakpoint 1400px-1920px: padding dan font lebih besar untuk layar lebar
+- Auth.php: `FOR UPDATE` dihapus, `$db->exec('BEGIN IMMEDIATE')` untuk SQLite
+- bootstrap/app.php: `base_url()` tambah `filter_var($hostPart, FILTER_VALIDATE_IP)`
+- Dockerfile: Entrypoint chown `storage/sessions/` di runtime untuk volume mount
 
 
 ## [1.0.0] - 2024-XX-XX

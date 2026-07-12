@@ -243,8 +243,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .admin-content {
-    padding: 1.75rem 2rem;
-    max-width: 1200px;
+    padding: 1.75rem clamp(1rem, 3vw, 3rem);
+    max-width: 100%;
+    width: 100%;
 }
 
 /* ---- Page Header ---- */
@@ -785,8 +786,102 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ---- Responsive ---- */
+/* Mobile (small phones) - <576px */
+@media (max-width: 576px) {
+    .admin-content { padding: 1rem; }
+    
+    /* Stat cards - stack 1 per row */
+    .stat-admin { margin-bottom: 1rem; }
+    
+    /* Quick actions - full width */
+    .quick-action { width: 100%; justify-content: center; }
+    
+    /* Welcome banner - stack vertically */
+    .welcome-banner { text-align: center; }
+    .welcome-banner > * { width: 100%; margin-bottom: 0.75rem; }
+    .welcome-banner .btn-admin { width: 100%; justify-content: center; }
+    
+    /* Buttons full width */
+    .btn-admin { width: 100%; justify-content: center; }
+    
+    /* Form layouts - single column */
+    .admin-form .row > .col { margin-bottom: 1rem; }
+    
+    /* Page head */
+    .page-head { flex-direction: column; align-items: flex-start; }
+}
+
+/* Tablets (portrait/landscape) - <768px */
+@media (max-width: 768px) {
+    .admin-content { padding: 1rem; }
+    
+    /* Sidebar becomes overlay */
+    #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        margin-left: calc(var(--sidebar-w) * -1);
+        z-index: 1050;
+        transition: margin-left 0.3s ease;
+    }
+    #sidebar.show,
+    #sidebar.open { margin-left: 0; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1040; }
+    .sidebar-overlay.show,
+    .sidebar-overlay.open { display: block; }
+    
+    /* Tables - horizontal scroll */
+    .admin-table { overflow-x: auto; }
+    .admin-table::-webkit-scrollbar { height: 4px; }
+    .admin-table::-webkit-scrollbar-track { background: transparent; }
+    .admin-table::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    
+    /* Admin cards - ensure no overflow */
+    .admin-card { overflow-x: auto; }
+    
+    /* Page head */
+    .page-head { flex-direction: column; align-items: flex-start; }
+    
+    /* Welcome banner */
+    .welcome-banner { flex-direction: column; align-items: flex-start; text-align: left; }
+    
+    /* Quick actions - stack */
+    .quick-action { width: 100%; }
+    
+    /* Stat cards */
+    .stat-admin { margin-bottom: 1rem; }
+}
+
+/* Smaller desktops - <991px */
 @media (max-width: 991px) {
     .admin-content { padding: 1.25rem; }
+    
+    /* Adjust grid for stat cards */
+    .stat-admin { margin-bottom: 1rem; }
+}
+
+/* Large screens - >=1400px */
+@media (min-width: 1400px) {
+    .admin-content { padding: 2rem clamp(1.5rem, 4vw, 4rem); }
+    .admin-card .card-body { padding: 2rem; }
+    .stat-admin { padding: 1.5rem; }
+    .welcome-banner { padding: 2rem 3rem; }
+    
+    /* Bigger text for large displays */
+    .stat-admin-num { font-size: 2.25rem; }
+    .page-title { font-size: 1.75rem; }
+}
+
+/* Ultrawide screens - >=1920px */
+@media (min-width: 1920px) {
+    .admin-content { padding: 2.5rem clamp(2rem, 5vw, 5rem); }
+    .admin-card .card-body { padding: 2.5rem; }
+    .stat-admin { padding: 1.75rem; }
+    
+    /* Even bigger text for ultrawide */
+    .stat-admin-num { font-size: 2.5rem; }
+    .page-title { font-size: 2rem; }
 }
 
 /* ---- Skip Link ---- */
@@ -804,18 +899,16 @@ h1, h2, h3, h4, h5, h6 {
     top: 0;
 }
 
+/* Settings tabs - horizontal scroll on mobile */
 @media (max-width: 768px) {
-    #sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        margin-left: calc(var(--sidebar-w) * -1);
-        z-index: 1050;
+    .settings-tabs .nav {
+        display: flex;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
     }
-    #sidebar.show { margin-left: 0; }
-    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1040; }
-    .sidebar-overlay.show { display: block; }
-    .page-head { flex-direction: column; align-items: flex-start; }
-    .welcome-banner { flex-direction: column; align-items: flex-start; }
+    .settings-tabs .nav-link {
+        flex-shrink: 0;
+    }
+    .settings-tabs .nav-link { padding: 0.65rem 1.5rem; }
 }

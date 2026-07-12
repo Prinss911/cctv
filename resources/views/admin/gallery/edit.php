@@ -10,10 +10,10 @@
             <div class="form-text">Isi jika ingin menggunakan URL, kosongkan jika upload file.</div>
         </div>
         <div class="row">
-            <div class="col-md-4 mb-3"><label class="form-label">Kategori</label><select class="form-select" name="category"><option value="indoor" <?= $item['category']==='indoor'?'selected':'' ?>>Indoor</option><option value="outdoor" <?= $item['category']==='outdoor'?'selected':'' ?>>Outdoor</option><option value="detail" <?= $item['category']==='detail'?'selected':'' ?>>Detail</option><option value="team" <?= $item['category']==='team'?'selected':'' ?>>Tim</option></select></div>
-            <div class="col-md-4 mb-3"><label class="form-label">Urutan</label><input type="number" class="form-control" name="sort_order" value="<?= (int)$item['sort_order'] ?>" min="0"></div>
-            <div class="col-md-4 mb-3 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" <?= $item['is_active']?'checked':'' ?>><label class="form-check-label" for="is_active">Aktif</label></div></div>
+            <div class="col-12 col-md-4 mb-3"><label class="form-label">Kategori</label><select class="form-select" name="category"><option value="indoor" <?= $item['category']==='indoor'?'selected':'' ?>>Indoor</option><option value="outdoor" <?= $item['category']==='outdoor'?'selected':'' ?>>Outdoor</option><option value="detail" <?= $item['category']==='detail'?'selected':'' ?>>Detail</option><option value="team" <?= $item['category']==='team'?'selected':'' ?>>Tim</option></select></div>
+            <div class="col-12 col-md-4 mb-3"><label class="form-label">Urutan</label><input type="number" class="form-control" name="sort_order" value="<?= (int)$item['sort_order'] ?>" min="0"></div>
+            <div class="col-12 col-md-4 mb-3 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" <?= $item['is_active']?'checked':'' ?>><label class="form-check-label" for="is_active">Aktif</label></div></div>
         </div>
-        <button type="submit" class="btn-admin btn-admin-fill"><i class="fas fa-check"></i> Simpan</button>
+        <button type="submit" class="btn-admin btn-admin-fill w-100 w-auto-md"><i class="fas fa-check"></i> Simpan</button>
     </form>
 </div></div>
