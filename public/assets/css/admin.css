@@ -806,16 +806,14 @@ h1, h2, h3, h4, h5, h6 {
     /* Stat cards - stack 1 per row */
     .stat-admin { margin-bottom: 1rem; }
     
-    /* Quick actions - full width */
-    .quick-action { width: 100%; justify-content: center; }
+    /* Quick actions */
+    .quick-action { justify-content: center; }
     
     /* Welcome banner - stack vertically */
     .welcome-banner { text-align: center; }
-    .welcome-banner > * { width: 100%; margin-bottom: 0.75rem; }
-    .welcome-banner .btn-admin { width: 100%; justify-content: center; }
     
-    /* Buttons full width */
-    .btn-admin { width: 100%; justify-content: center; }
+    /* Buttons */
+    .btn-admin { justify-content: center; }
     
     /* Form layouts - single column */
     .admin-form .row > .col { margin-bottom: 1rem; }
@@ -858,8 +856,7 @@ h1, h2, h3, h4, h5, h6 {
     /* Welcome banner */
     .welcome-banner { flex-direction: column; align-items: flex-start; text-align: left; }
     
-    /* Quick actions - stack */
-    .quick-action { width: 100%; }
+    
     
     /* Stat cards */
     .stat-admin { margin-bottom: 1rem; }
