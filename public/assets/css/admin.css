@@ -163,7 +163,7 @@ h1, h2, h3, h4, h5, h6 {
 .admin-topbar {
     background: var(--warm-white);
     border-bottom: 1px solid var(--border);
-    padding: 0.65rem 1.5rem;
+    padding: 0.65rem clamp(1rem, 2.5vw, 3rem);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -789,6 +789,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Mobile (small phones) - <576px */
 @media (max-width: 576px) {
     .admin-content { padding: 1rem; }
+    .admin-topbar { padding-left: 0.75rem; padding-right: 0.75rem; }
     
     /* Stat cards - stack 1 per row */
     .stat-admin { margin-bottom: 1rem; }
@@ -814,6 +815,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Tablets (portrait/landscape) - <768px */
 @media (max-width: 768px) {
     .admin-content { padding: 1rem; }
+    .admin-topbar { padding-left: 0.75rem; padding-right: 0.75rem; }
     
     /* Sidebar becomes overlay */
     #sidebar {
