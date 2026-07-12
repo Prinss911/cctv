@@ -163,7 +163,7 @@ h1, h2, h3, h4, h5, h6 {
 .admin-topbar {
     background: var(--warm-white);
     border-bottom: 1px solid var(--border);
-    padding: 0.65rem clamp(1rem, 2.5vw, 3rem);
+    padding: 0.65rem 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -243,7 +243,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .admin-content {
-    padding: 1.5rem clamp(1rem, 2.5vw, 3rem);
+    padding: 1.5rem 0;
     max-width: 100%;
     width: 100%;
 }
@@ -788,8 +788,8 @@ h1, h2, h3, h4, h5, h6 {
 /* ---- Responsive ---- */
 /* Mobile (small phones) - <576px */
 @media (max-width: 576px) {
-    .admin-content { padding: 1rem; }
-    .admin-topbar { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .admin-content { padding: 1rem 0; }
+    .admin-topbar { padding-left: 0; padding-right: 0; }
     
     /* Stat cards - stack 1 per row */
     .stat-admin { margin-bottom: 1rem; }
@@ -814,8 +814,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Tablets (portrait/landscape) - <768px */
 @media (max-width: 768px) {
-    .admin-content { padding: 1rem; }
-    .admin-topbar { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .admin-content { padding: 1rem 0; }
+    .admin-topbar { padding-left: 0; padding-right: 0; }
     
     /* Sidebar becomes overlay */
     #sidebar {
@@ -857,7 +857,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Smaller desktops - <991px */
 @media (max-width: 991px) {
-    .admin-content { padding: 1.25rem; }
+    .admin-content { padding: 1.25rem 0; }
     
     /* Adjust grid for stat cards */
     .stat-admin { margin-bottom: 1rem; }
@@ -865,7 +865,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Large screens - >=1400px */
 @media (min-width: 1400px) {
-    .admin-content { padding: 2rem clamp(1.5rem, 3vw, 4rem); }
+    .admin-content { padding: 2rem 0; }
     .admin-card .card-body { padding: 2rem; }
     .stat-admin { padding: 1.5rem; }
     .welcome-banner { padding: 2rem 3rem; }
@@ -877,7 +877,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Ultrawide screens - >=1920px */
 @media (min-width: 1920px) {
-    .admin-content { padding: 2rem clamp(1.5rem, 3vw, 4rem); }
+    .admin-content { padding: 2rem 0; }
     .admin-card .card-body { padding: 2.5rem; }
     .stat-admin { padding: 1.75rem; }
     
