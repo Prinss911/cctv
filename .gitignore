@@ -2,6 +2,8 @@
 storage/db/*.db
 storage/logs/*.log
 storage/cache/*
+storage/sessions/*
+!storage/sessions/.gitkeep
 public/uploads/gallery/*
 public/uploads/sliders/*
 public/uploads/testimonials/*

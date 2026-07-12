@@ -27,18 +27,16 @@ ENV APP_ENV=production \
 COPY . /var/www/html/
 
 # Set proper ownership and permissions for writable directories
-RUN chown -R www-data:www-data /var/www/html/storage \
-    && chown -R www-data:www-data /var/www/html/public/uploads \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/public/uploads
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/public/uploads \
+    && chmod -R 755 /var/www/html/storage /var/www/html/public/uploads
 
 # Create entrypoint script for first-run conditional migration
 RUN { \
     echo '#!/bin/sh'; \
     echo 'set -e'; \
     echo ''; \
-    echo '# Ensure storage/db directory exists'; \
-    echo 'mkdir -p /var/www/html/storage/db'; \
+    echo '# Ensure storage directories exist (db, sessions)'; \
+    echo 'mkdir -p /var/www/html/storage/db /var/www/html/storage/sessions'; \
     echo ''; \
     echo '# Run migration only if the database does not exist yet'; \
     echo 'if [ ! -f /var/www/html/storage/db/app.db ]; then'; \

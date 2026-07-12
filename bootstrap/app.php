@@ -134,6 +134,13 @@ if (session_status() === PHP_SESSION_NONE) {
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
+
+    // Use custom session save path (www-data writable, not /tmp)
+    $sessionPath = BASE_PATH . '/storage/sessions';
+    if (!is_dir($sessionPath)) {
+        @mkdir($sessionPath, 0755, true);
+    }
+    session_save_path($sessionPath);
     session_start();
 }
 
