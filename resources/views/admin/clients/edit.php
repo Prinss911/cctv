@@ -45,7 +45,7 @@
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn-admin btn-admin-fill">
+            <button type="submit" class="btn-admin btn-admin-fill w-100 w-auto-md">
                 <i class="fas fa-save me-1"></i>Simpan Perubahan
             </button>
         </form>

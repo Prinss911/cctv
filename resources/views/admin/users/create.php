@@ -12,6 +12,6 @@
                 <option value="operator">Operator</option>
             </select>
         </div>
-        <button type="submit" class="btn-admin btn-admin-fill"><i class="fas fa-check"></i> Simpan</button>
+        <button type="submit" class="btn-admin btn-admin-fill w-100 w-auto-md"><i class="fas fa-check"></i> Simpan</button>
     </form>
 </div></div>

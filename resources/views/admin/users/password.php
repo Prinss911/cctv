@@ -15,6 +15,6 @@
             <label class="form-label">Konfirmasi Password Baru <span class="text-danger">*</span></label>
             <input type="password" class="form-control" name="confirm_password" required minlength="8">
         </div>
-        <button type="submit" class="btn-admin btn-admin-fill"><i class="fas fa-check"></i> Ganti Password</button>
+        <button type="submit" class="btn-admin btn-admin-fill w-100 w-auto-md"><i class="fas fa-check"></i> Ganti Password</button>
     </form>
 </div></div>

@@ -11,6 +11,6 @@
             <div class="form-text">Isi jika ingin menggunakan URL, kosongkan jika upload file.</div>
         </div>
         <div class="row"><div class="col-md-4 mb-3"><label class="form-label">Rating</label><select class="form-select" name="rating"><?php for($r=5;$r>=1;$r--): ?><option value="<?= e($r) ?>" <?= $item['rating']==$r ? 'selected' : '' ?>><?= e($r) ?></option><?php endfor; ?></select></div><div class="col-md-4 mb-3"><label class="form-label">Urutan</label><input type="number" class="form-control" name="sort_order" value="<?= (int)$item['sort_order'] ?>" min="0"></div><div class="col-md-4 mb-3 d-flex align-items-end"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" <?= $item['is_active']?'checked':'' ?>><label class="form-check-label" for="is_active">Aktif</label></div></div></div>
-        <button type="submit" class="btn-admin btn-admin-fill"><i class="fas fa-check"></i> Simpan</button>
+        <button type="submit" class="btn-admin btn-admin-fill w-100 w-auto-md"><i class="fas fa-check"></i> Simpan</button>
     </form>
 </div></div>
