@@ -13,8 +13,8 @@
     </a>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-xl col-md-6 col-12">
+<div class="row g-3 mb-4 row-cols-2 row-cols-md-5">
+    <div class="col">
         <div class="stat-admin c-blue">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
@@ -25,7 +25,7 @@
             </div>
         </div>
     </div>
-    <div class="col-xl col-md-4 col-6">
+    <div class="col">
         <div class="stat-admin c-green">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
@@ -36,7 +36,7 @@
             </div>
         </div>
     </div>
-    <div class="col-xl col-md-4 col-6">
+    <div class="col">
         <div class="stat-admin c-amber">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
@@ -47,7 +47,7 @@
             </div>
         </div>
     </div>
-    <div class="col-xl col-md-4 col-6">
+    <div class="col">
         <div class="stat-admin c-rose">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
@@ -58,7 +58,7 @@
             </div>
         </div>
     </div>
-    <div class="col-xl col-md-4 col-6">
+    <div class="col">
         <div class="stat-admin c-purple">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
