@@ -352,6 +352,35 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
     </div>
 </section>
 
+<!-- ADVANTAGES -->
+<section class="section section-cream" id="keunggulan">
+    <div class="container">
+        <div class="section-header text-center reveal" style="max-width:550px;margin:0 auto 3.5rem">
+            <div class="section-label" style="justify-content:center">Kenapa Pilih Kami</div>
+            <h2 class="section-heading" style="max-width:100%">Kenapa Harus Pilih Jasa CCTV Kami?</h2>
+            <p class="section-desc" style="margin:1rem auto 0">Kami berkomitmen memberikan layanan terbaik untuk keamanan properti Anda</p>
+        </div>
+        
+        <div class="advantages-grid">
+            <?php if (!empty($advantages)): ?>
+                <?php foreach ($advantages as $i => $adv): ?>
+                <div class="advantage-card reveal<?php if($i > 0) echo ' reveal-d' . min($i+1, 4) ?>" style="border-top-color: <?= e($adv['border_color']) ?>">
+                    <div class="advantage-icon">
+                        <i class="fas <?= e($adv['icon']) ?>"></i>
+                    </div>
+                    <h3 class="advantage-title"><?= e($adv['title']) ?></h3>
+                    <p class="advantage-desc"><?= e($adv['description']) ?></p>
+                </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="col-12 text-center text-muted py-5">
+                    <p>Belum ada data keunggulan.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
 <!-- CLIENTS -->
 <?php if (!empty($clients)): ?>
 <section class="section">

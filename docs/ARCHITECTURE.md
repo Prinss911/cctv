@@ -813,6 +813,18 @@ Autoloader terdapat di `bootstrap/autoload.php` menggunakan `spl_autoload_regist
 | POST | `/admin/brand/{id}/delete` | `Admin\BrandController@destroy` | Hapus brand + file logo |
 | POST | `/admin/brand/reorder` | `Admin\BrandController@reorder` | Simpan urutan |
 
+### Admin — Keunggulan (Advantages)
+
+| Method | URI | Controller@Method | Keterangan |
+|---|---|---|---|
+| GET | `/admin/advantages` | `Admin\AdvantageController@index` | Daftar keunggulan |
+| GET | `/admin/advantages/create` | `Admin\AdvantageController@create` | Form tambah keunggulan |
+| POST | `/admin/advantages` | `Admin\AdvantageController@store` | Simpan keunggulan baru |
+| GET | `/admin/advantages/{id}/edit` | `Admin\AdvantageController@edit` | Form edit keunggulan |
+| POST | `/admin/advantages/{id}` | `Admin\AdvantageController@update` | Update keunggulan |
+| POST | `/admin/advantages/{id}/delete` | `Admin\AdvantageController@destroy` | Hapus keunggulan |
+| POST | `/admin/advantages/reorder` | `Admin\AdvantageController@reorder` | Simpan urutan |
+
 ### Admin — Pengaturan
 
 | Method | URI | Controller@Method | Keterangan |

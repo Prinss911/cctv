@@ -45,6 +45,7 @@ $isLogin = $currentPath === '/admin/login';
                 <li class="nav-item"><a class="nav-link <?= str_starts_with($currentPath, '/admin/gallery') ? 'active' : '' ?>" href="<?= url('/admin/gallery') ?>"<?= str_starts_with($currentPath, '/admin/gallery') ? ' aria-current="page"' : '' ?>><i class="fas fa-camera"></i>Galeri</a></li>
                 <li class="nav-item"><a class="nav-link <?= str_starts_with($currentPath, '/admin/testimonials') ? 'active' : '' ?>" href="<?= url('/admin/testimonials') ?>"<?= str_starts_with($currentPath, '/admin/testimonials') ? ' aria-current="page"' : '' ?>><i class="fas fa-star"></i>Testimoni</a></li>
                 <li class="nav-item"><a class="nav-link <?= str_starts_with($currentPath, '/admin/clients') ? 'active' : '' ?>" href="<?= url('/admin/clients') ?>"<?= str_starts_with($currentPath, '/admin/clients') ? ' aria-current="page"' : '' ?>><i class="fas fa-handshake"></i>Client</a></li>
+                <li class="nav-item"><a class="nav-link <?= str_starts_with($currentPath, '/admin/advantages') ? 'active' : '' ?>" href="<?= url('/admin/advantages') ?>"<?= str_starts_with($currentPath, '/admin/advantages') ? ' aria-current="page"' : '' ?>><i class="fas fa-star"></i>Keunggulan</a></li>
             </ul>
             <div class="sidebar-section">Sistem</div>
             <ul class="nav flex-column" aria-label="System navigation">

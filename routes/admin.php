@@ -70,5 +70,13 @@ $router->post('/admin/users/{id}/delete', 'Admin\UsersController@destroy', [\App
 $router->get('/admin/users/password', 'Admin\UsersController@password', [\App\Middleware\AuthMiddleware::class]);
 $router->post('/admin/users/password', 'Admin\UsersController@updatePassword', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
 
+$router->get('/admin/advantages', 'Admin\AdvantageController@index', [\App\Middleware\AuthMiddleware::class]);
+$router->get('/admin/advantages/create', 'Admin\AdvantageController@create', [\App\Middleware\AuthMiddleware::class]);
+$router->post('/admin/advantages', 'Admin\AdvantageController@store', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+$router->get('/admin/advantages/{id}/edit', 'Admin\AdvantageController@edit', [\App\Middleware\AuthMiddleware::class]);
+$router->post('/admin/advantages/{id}', 'Admin\AdvantageController@update', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+$router->post('/admin/advantages/{id}/delete', 'Admin\AdvantageController@destroy', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+$router->post('/admin/advantages/reorder', 'Admin\AdvantageController@reorder', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+
 $router->get('/admin/settings', 'Admin\SettingsController@index', [\App\Middleware\AuthMiddleware::class]);
 $router->post('/admin/settings', 'Admin\SettingsController@update', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);

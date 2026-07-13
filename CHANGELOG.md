@@ -39,6 +39,22 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 - Semua 5 controller (Slider, Gallery, Brand, Client, Testimonial) diubah di store() dan update()
 - 10 view files diubah (create + edit untuk masing-masing modul)
 
+## [1.4.0] - 2026-07-13
+
+### Ditambahkan
+- **Modul Keunggulan (Advantages)** — Seksi "Kenapa Harus Pilih Jasa CCTV Kami?" di halaman utama dengan 6 poin keunggulan (variasi paket, produk bergaransi, tim berpengalaman, teknisi profesional, gratis konsultasi, CS)
+- **Advantage CRUD Admin** — Controller, 3 view (index, create, edit), routes, dan sidebar nav untuk mengelola keunggulan
+- **Icon Picker Visual** — Pilih dari 19 ikon Font Awesome + input kustom; color picker terintegrasi untuk border color
+- **Advantage CSS** — Card grid 3 kolom dengan border-top berwarna, ikon circle, hover lift effect, dark mode support
+- **Desain Siap Desktop & Mobile** — 3 kolom akan menyesuaikan menjadi 2 kolom di tablet, 1 kolom di mobile
+
+### Detail Teknis
+- Migration: `2026_07_13_000009_create_advantages.php` — tabel advantages dengan 9 kolom, seed 6 data awal
+- Model: `AdvantageModel` extends BaseModel, `$softDeletes = false`, `getActive()` untuk frontend
+- Controller: CRUD + reorder dengan AuthMiddleware, CSRF protection
+- Frontend: `$advantages` di HomeController, section di home/index.php antara testimoni dan clients
+- CSS: ~100 baris di app.css (grid, card, icon, hover, dark mode) + admin.css (admin list styles)
+
 ## [1.3.0] - 2026-07-13
 
 ### Ditambahkan

@@ -8,6 +8,7 @@ use App\Models\PricingBrandModel;
 use App\Models\GalleryModel;
 use App\Models\TestimonialModel;
 use App\Models\ClientModel;
+use App\Models\AdvantageModel;
 use App\Helpers\View;
 
 class HomeController
@@ -21,9 +22,10 @@ class HomeController
         $gallery = (new GalleryModel())->getActive();
         $testimonials = (new TestimonialModel())->getActive();
         $clients = (new ClientModel())->getActive();
+        $advantages = (new AdvantageModel())->getActive('sort_order ASC');
 
         View::render('home/index', compact(
-            'sliders', 'packages', 'brands', 'gallery', 'testimonials', 'clients'
+            'sliders', 'packages', 'brands', 'gallery', 'testimonials', 'advantages', 'clients'
         ), 'main');
     }
 }
