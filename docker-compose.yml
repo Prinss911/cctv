@@ -11,6 +11,15 @@ services:
       - ./storage:/var/www/html/storage
       - ./public/uploads:/var/www/html/public/uploads
       - ./.env:/var/www/html/.env:ro
+      - ./app:/var/www/html/app:ro
+      - ./bootstrap:/var/www/html/bootstrap:ro
+      - ./config:/var/www/html/config:ro
+      - ./database:/var/www/html/database:ro
+      - ./resources:/var/www/html/resources:ro
+      - ./routes:/var/www/html/routes:ro
+      - ./public/assets:/var/www/html/public/assets:ro
+      - ./public/index.php:/var/www/html/public/index.php:ro
+      - ./public/.htaccess:/var/www/html/public/.htaccess:ro
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
