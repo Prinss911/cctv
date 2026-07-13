@@ -78,5 +78,13 @@ $router->post('/admin/advantages/{id}', 'Admin\AdvantageController@update', [\Ap
 $router->post('/admin/advantages/{id}/delete', 'Admin\AdvantageController@destroy', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
 $router->post('/admin/advantages/reorder', 'Admin\AdvantageController@reorder', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
 
+$router->get('/admin/about-features', 'Admin\AboutFeatureController@index', [\App\Middleware\AuthMiddleware::class]);
+$router->get('/admin/about-features/create', 'Admin\AboutFeatureController@create', [\App\Middleware\AuthMiddleware::class]);
+$router->post('/admin/about-features', 'Admin\AboutFeatureController@store', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+$router->get('/admin/about-features/{id}/edit', 'Admin\AboutFeatureController@edit', [\App\Middleware\AuthMiddleware::class]);
+$router->post('/admin/about-features/{id}', 'Admin\AboutFeatureController@update', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+$router->post('/admin/about-features/{id}/delete', 'Admin\AboutFeatureController@destroy', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+$router->post('/admin/about-features/reorder', 'Admin\AboutFeatureController@reorder', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+
 $router->get('/admin/settings', 'Admin\SettingsController@index', [\App\Middleware\AuthMiddleware::class]);
 $router->post('/admin/settings', 'Admin\SettingsController@update', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);

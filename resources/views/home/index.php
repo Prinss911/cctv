@@ -99,34 +99,17 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
                     <p class="section-desc"><?= e(setting('about_text')) ?></p>
                 </div>
                 <div class="mt-4">
-                    <div class="feature-row reveal reveal-d1">
-                        <div class="feature-icon-box"><i class="fas fa-tools"></i></div>
-                        <div class="feature-text">
-                            <strong>Teknisi Berpengalaman</strong>
-                            <span>Tim tersertifikasi dengan pengalaman bertahun-tahun</span>
+                    <?php if (!empty($aboutFeatures)): ?>
+                        <?php foreach ($aboutFeatures as $af_i => $af): ?>
+                        <div class="feature-row reveal<?= $af_i > 0 ? ' reveal-d' . ($af_i + 1) : '' ?>">
+                            <div class="feature-icon-box"><i class="fas <?= e($af['icon']) ?>"></i></div>
+                            <div class="feature-text">
+                                <strong><?= e($af['title']) ?></strong>
+                                <span><?= e($af['description']) ?></span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="feature-row reveal reveal-d2">
-                        <div class="feature-icon-box"><i class="fas fa-award"></i></div>
-                        <div class="feature-text">
-                            <strong>Garansi Resmi</strong>
-                            <span>Produk dan pemasangan bergaransi penuh</span>
-                        </div>
-                    </div>
-                    <div class="feature-row reveal reveal-d3">
-                        <div class="feature-icon-box"><i class="fas fa-mobile-alt"></i></div>
-                        <div class="feature-text">
-                            <strong>Pantau dari HP</strong>
-                            <span>Remote monitoring via smartphone kapan saja</span>
-                        </div>
-                    </div>
-                    <div class="feature-row reveal reveal-d4">
-                        <div class="feature-icon-box"><i class="fas fa-headset"></i></div>
-                        <div class="feature-text">
-                            <strong>After-Sales Support</strong>
-                            <span>Layanan purna jual yang responsif</span>
-                        </div>
-                    </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
                 <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener" class="btn-hero btn-hero-fill mt-4" style="display:inline-flex">
                     <i class="fab fa-whatsapp"></i> Konsultasi Gratis
