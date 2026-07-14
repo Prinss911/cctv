@@ -86,5 +86,13 @@ $router->post('/admin/about-features/{id}', 'Admin\AboutFeatureController@update
 $router->post('/admin/about-features/{id}/delete', 'Admin\AboutFeatureController@destroy', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
 $router->post('/admin/about-features/reorder', 'Admin\AboutFeatureController@reorder', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
 
+$router->get('/admin/faqs', 'Admin\FaqController@index', [\App\Middleware\AuthMiddleware::class]);
+$router->get('/admin/faqs/create', 'Admin\FaqController@create', [\App\Middleware\AuthMiddleware::class]);
+$router->post('/admin/faqs', 'Admin\FaqController@store', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+$router->get('/admin/faqs/{id}/edit', 'Admin\FaqController@edit', [\App\Middleware\AuthMiddleware::class]);
+$router->post('/admin/faqs/{id}', 'Admin\FaqController@update', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+$router->post('/admin/faqs/{id}/delete', 'Admin\FaqController@destroy', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+$router->post('/admin/faqs/reorder', 'Admin\FaqController@reorder', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);
+
 $router->get('/admin/settings', 'Admin\SettingsController@index', [\App\Middleware\AuthMiddleware::class]);
 $router->post('/admin/settings', 'Admin\SettingsController@update', [\App\Middleware\AuthMiddleware::class, \App\Middleware\CsrfMiddleware::class]);

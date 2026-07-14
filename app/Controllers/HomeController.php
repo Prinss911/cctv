@@ -10,6 +10,7 @@ use App\Models\TestimonialModel;
 use App\Models\ClientModel;
 use App\Models\AdvantageModel;
 use App\Models\AboutFeatureModel;
+use App\Models\FaqModel;
 use App\Helpers\View;
 
 class HomeController
@@ -25,9 +26,10 @@ class HomeController
         $clients = (new ClientModel())->getActive();
         $advantages = (new AdvantageModel())->getActive('sort_order ASC');
         $aboutFeatures = (new AboutFeatureModel())->getActive('sort_order ASC');
+        $faqs = (new FaqModel())->getActive('sort_order ASC');
 
         View::render('home/index', compact(
-            'sliders', 'packages', 'brands', 'gallery', 'testimonials', 'advantages', 'clients', 'aboutFeatures'
+            'sliders', 'packages', 'brands', 'gallery', 'testimonials', 'advantages', 'clients', 'aboutFeatures', 'faqs'
         ), 'main');
     }
 }

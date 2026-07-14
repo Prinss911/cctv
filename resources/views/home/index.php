@@ -88,6 +88,36 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
     </div>
 </section>
 
+<!-- FAQ -->
+<section id="faq" class="section section-cream">
+    <div class="container">
+        <div class="section-header text-center reveal" style="max-width:600px;margin:0 auto 3.5rem">
+            <div class="section-label" style="justify-content:center">FAQ</div>
+            <h2 class="section-heading" style="max-width:100%">Pertanyaan Umum</h2>
+            <p class="section-desc" style="margin:1rem auto 0">Temukan jawaban atas pertanyaan yang sering diajukan tentang layanan kami</p>
+        </div>
+        <div class="faq-list" style="max-width:700px;margin:0 auto">
+            <?php if (!empty($faqs)): ?>
+                <?php foreach ($faqs as $i => $faq): ?>
+                <div class="faq-item <?= $i === 0 ? 'open' : '' ?>">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open')" type="button">
+                        <span><?= e($faq['question']) ?></span>
+                        <span class="faq-icon"><i class="fas fa-plus"></i></span>
+                    </button>
+                    <div class="faq-answer">
+                        <p><?= e($faq['answer']) ?></p>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="text-center text-muted py-5">
+                    <p>Belum ada data FAQ.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
 <!-- ABOUT -->
 <section id="tentang" class="section">
     <div class="container">
