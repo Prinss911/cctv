@@ -39,21 +39,32 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 - Semua 5 controller (Slider, Gallery, Brand, Client, Testimonial) diubah di store() dan update()
 - 10 view files diubah (create + edit untuk masing-masing modul)
 
-## [1.4.0] - 2026-07-13
+## [1.5.0] - 2026-07-15
 
 ### Ditambahkan
-- **Modul Keunggulan (Advantages)** — Seksi "Kenapa Harus Pilih Jasa CCTV Kami?" di halaman utama dengan 6 poin keunggulan (variasi paket, produk bergaransi, tim berpengalaman, teknisi profesional, gratis konsultasi, CS)
-- **Advantage CRUD Admin** — Controller, 3 view (index, create, edit), routes, dan sidebar nav untuk mengelola keunggulan
-- **Icon Picker Visual** — Pilih dari 19 ikon Font Awesome + input kustom; color picker terintegrasi untuk border color
-- **Advantage CSS** — Card grid 3 kolom dengan border-top berwarna, ikon circle, hover lift effect, dark mode support
-- **Desain Siap Desktop & Mobile** — 3 kolom akan menyesuaikan menjadi 2 kolom di tablet, 1 kolom di mobile
+- **Modul Fitur Tentang Kami (Dinamis)** — Seksi `$aboutFeatures` di halaman utama dengan 4 fitur (Teknisi Berpengalaman, Garansi Resmi, Pantau dari HP, After-Sales Support) yang dapat dikelola lewat admin panel
+- **AboutFeature CRUD Admin** — Controller, 3 view (index, create, edit), routes, dan sidebar nav "Fitur Tentang Kami"
+- **Modul FAQ Dinamis** — Seksi FAQ interaktif (accordion style) dengan 7 pertanyaan umum seputar CCTV yang dapat dikelola lewat admin panel
+- **FAQ CRUD Admin** — Controller, 3 view (index, create, edit, SortableJS), routes, dan sidebar nav "FAQ"
+- **FAQ Schema JSON-LD** — Structured data untuk SEO Google Rich Results
+
+### Diubah
+- **Landing page restructure** — Dari 10 section menjadi 8 section yang lebih fokus:
+  - ABOUT + ADVANTAGES digabung jadi satu section value prop + statistik + keunggulan
+  - FAQ dipindahkan dari posisi #2 (setelah Hero) ke posisi #8 (sebelum CTA) sebagai objection handler
+  - Pesan lebih tajam, user journey lebih natural
+- **Bind mounts untuk app code** — `docker-compose.yml` kini mount folder `app/`, `resources/`, `routes/`, `bootstrap/`, `config/`, `database/` sebagai read-only volume, sehingga sync via robocopy langsung生效 tanpa rebuild image
 
 ### Detail Teknis
-- Migration: `2026_07_13_000009_create_advantages.php` — tabel advantages dengan 9 kolom, seed 6 data awal
-- Model: `AdvantageModel` extends BaseModel, `$softDeletes = false`, `getActive()` untuk frontend
-- Controller: CRUD + reorder dengan AuthMiddleware, CSRF protection
-- Frontend: `$advantages` di HomeController, section di home/index.php antara testimoni dan clients
-- CSS: ~100 baris di app.css (grid, card, icon, hover, dark mode) + admin.css (admin list styles)
+- Migration: `2026_07_13_000010_create_about_features.php` — tabel about_features dengan 4 kolom + seed 4 data
+- Migration: `2026_07_13_000011_create_faqs.php` — tabel faqs dengan 5 kolom + seed 7 data (Q&A instalasi, garansi, monitoring, harga)
+- Model: AboutFeatureModel + FaqModel, extends BaseModel, pattern sama dengan modul lain
+- Controller: AboutFeatureController + FaqController (CRUD + reorder, AuthMiddleware, CSRF)
+- Admin views: @ 6 file baru (about-features, faqs — masing-masing index/create/edit)
+- Routes: @ 14 route baru (masing-masing 7)
+- Security: CSP update (`script-src` tambah `https://static.cloudflareinsights.com`), SSL verify aktif
+- Deploy: deploy.ps1 — auto-deteksi plink/native SSH + tar/scp fallback
+- CSS: Accordion FAQ sudah siap sejak sebelumnya (`.faq-item`, `.faq-question`, `.faq-icon`, `.faq-answer`)
 
 ## [1.3.0] - 2026-07-13
 
