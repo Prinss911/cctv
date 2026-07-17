@@ -16,18 +16,16 @@ Thumbs.db
 *.swp
 
 # Junk / debug files
-cookies.txt
-cookies2.txt
-cookies3.txt
+*.txt
+*.log
 *.png
 *.jpg
 *.jpeg
 *.bmp
-router.php
-start-php-server.ps1
-start-php.bat
-start-php.ps1
-php-server.log
+cookie*
+header*
+start-*.bat
+start-php-server.*
 database/database.sqlite
 .omo/
 .playwright-mcp/
