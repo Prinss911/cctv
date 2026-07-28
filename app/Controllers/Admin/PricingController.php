@@ -5,7 +5,7 @@ namespace App\Controllers\Admin;
 use App\Middleware\AuthMiddleware;
 use App\Models\PricingModel;
 use App\Models\PricingBrandModel;
-use App\Helpers\{View, Flash, Csrf, Request};
+use App\Helpers\{View, Flash, Request};
 use function trim;
 use function array_filter;
 
@@ -36,8 +36,6 @@ class PricingController
 
     public function store(): void
     {
-        Csrf::verify();
-        
         // Validate brand_id if provided
         $brandId = !empty(Request::post('brand_id')) ? (int)Request::post('brand_id') : null;
         if ($brandId !== null) {
@@ -108,8 +106,6 @@ class PricingController
 
     public function update(string $id): void
     {
-        Csrf::verify();
-        
         // Validate brand_id if provided
         $brandId = !empty(Request::post('brand_id')) ? (int)Request::post('brand_id') : null;
         if ($brandId !== null) {
@@ -144,7 +140,6 @@ class PricingController
 
     public function destroy(string $id): void
     {
-        Csrf::verify();
         $this->model->delete((int)$id);
         Flash::set('success', 'Paket berhasil dihapus.');
         redirect('/admin/pricing');
@@ -153,7 +148,6 @@ class PricingController
 
     public function reorder(): void
     {
-        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $this->model->updateSortOrder($ids);
         header('Content-Type: application/json');

@@ -1,5 +1,7 @@
 <?php
-$metaTitle = setting('meta_title', setting('site_name', 'Bayu CCTV'));
+$siteName = setting('site_name', 'Bayu CCTV');
+$siteTagline = setting('site_tagline', '');
+$metaTitle = $siteName . ($siteTagline ? ' - ' . $siteTagline : '');
 $metaDesc = setting('meta_description', '');
 ?>
 <!DOCTYPE html>

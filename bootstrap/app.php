@@ -16,14 +16,16 @@ if (file_exists($envFile)) {
         $value = trim($value);
         $value = trim($value, '"\'');
         $_ENV[$key] = $value;
-        putenv("$key=$value");
+        if (function_exists('putenv')) {
+            putenv("$key=$value");
+        }
     }
 }
 
 if (!function_exists('env')) {
     function env(string $key, $default = null) {
-        $value = $_ENV[$key] ?? getenv($key);
-        if ($value === false) return $default;
+        $value = $_ENV[$key] ?? (function_exists('getenv') ? getenv($key) : false);
+        if ($value === false || $value === null) return $default;
         $map = ['true' => true, 'false' => false, 'null' => null, '' => null];
         $lower = strtolower($value);
         return array_key_exists($lower, $map) ? $map[$lower] : $value;
@@ -80,6 +82,10 @@ if (!function_exists('asset')) {
 
 if (!function_exists('upload_url')) {
     function upload_url(string $path): string {
+        // If already a full URL, use as-is (embed mode)
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
         return base_url() . '/uploads/' . ltrim($path, '/');
     }
 }
@@ -166,8 +172,8 @@ header('X-XSS-Protection: 1; mode=block');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 
-header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';");
-header("Permissions-Policy: geolocation=(), microphone=(), camera=(), fullscreen=(self), payment=();");
+header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com https://static.cloudflareinsights.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self';");
+header("Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()");
 
 // Remove PHP version disclosure
 header_remove('X-Powered-By');

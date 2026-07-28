@@ -5,7 +5,7 @@ use App\Middleware\AuthMiddleware;
 use App\Models\PricingBrandModel;
 use App\Models\PricingModel;
 use App\Models\Database;
-use App\Helpers\{View, Flash, Csrf, Upload, Request};
+use App\Helpers\{View, Flash, Upload, Request};
 use function trim;
 use function array_filter;
 
@@ -34,8 +34,6 @@ class BrandController
 
     public function store(): void
     {
-        Csrf::verify();
-        
         $name = trim(Request::post('name', ''));
         $slug = trim(Request::post('slug', ''));
         $isActive = Request::has('is_active') ? 1 : 0;
@@ -109,8 +107,6 @@ class BrandController
 
     public function update(string $id): void
     {
-        Csrf::verify();
-        
         $brand = $this->brandModel->getById((int)$id);
         if (!$brand) {
             Flash::set('error', 'Brand tidak ditemukan.');
@@ -186,8 +182,6 @@ class BrandController
 
     public function destroy(string $id): void
     {
-        Csrf::verify();
-        
         $brand = $this->brandModel->getById((int)$id);
         if (!$brand) {
             Flash::set('error', 'Brand tidak ditemukan.');
@@ -249,7 +243,6 @@ class BrandController
 
     public function reorder(): void
     {
-        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $updates = [];
         foreach ($ids as $order => $id) {

@@ -3,7 +3,7 @@ namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\UserModel;
-use App\Helpers\{View, Flash, Csrf, Request};
+use App\Helpers\{View, Flash, Request};
 use function trim;
 
 class UsersController
@@ -29,8 +29,6 @@ class UsersController
 
     public function store(): void
     {
-        Csrf::verify();
-
         $name  = trim(Request::post('name', ''));
         $email = trim(Request::post('email', ''));
         $password = Request::post('password', '');
@@ -93,8 +91,6 @@ class UsersController
 
     public function update(string $id): void
     {
-        Csrf::verify();
-
         $user = $this->model->find((int)$id);
         if (!$user) {
             Flash::set('error', 'Pengguna tidak ditemukan.');
@@ -146,8 +142,6 @@ class UsersController
 
     public function destroy(string $id): void
     {
-        Csrf::verify();
-
         $item = $this->model->find((int)$id);
         if (!$item) {
             Flash::set('error', 'Pengguna tidak ditemukan.');
@@ -176,8 +170,6 @@ class UsersController
 
     public function updatePassword(): void
     {
-        Csrf::verify();
-
         $currentUser = \App\Helpers\Auth::user();
         if (!$currentUser) {
             Flash::set('error', 'Sesi berakhir. Silakan login ulang.');

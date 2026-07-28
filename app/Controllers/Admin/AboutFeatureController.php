@@ -4,7 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\AboutFeatureModel;
-use App\Helpers\{View, Flash, Csrf, Request};
+use App\Helpers\{View, Flash, Request};
 
 class AboutFeatureController
 {
@@ -29,8 +29,6 @@ class AboutFeatureController
 
     public function store(): void
     {
-        Csrf::verify();
-
         $this->model->create([
             'icon'        => trim(Request::post('icon', 'fa-check')),
             'title'       => trim(Request::post('title', '')),
@@ -57,7 +55,6 @@ class AboutFeatureController
 
     public function update(string $id): void
     {
-        Csrf::verify();
         $item = $this->model->find((int)$id);
         if (!$item) {
             Flash::set('error', 'Fitur tidak ditemukan.');
@@ -80,7 +77,6 @@ class AboutFeatureController
 
     public function destroy(string $id): void
     {
-        Csrf::verify();
         $item = $this->model->find((int)$id);
         if (!$item) {
             Flash::set('error', 'Fitur tidak ditemukan.');
@@ -96,7 +92,6 @@ class AboutFeatureController
 
     public function reorder(): void
     {
-        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $this->model->updateSortOrder($ids);
         header('Content-Type: application/json');

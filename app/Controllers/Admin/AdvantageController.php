@@ -4,7 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\AdvantageModel;
-use App\Helpers\{View, Flash, Csrf, Request};
+use App\Helpers\{View, Flash, Request};
 use function trim;
 
 class AdvantageController
@@ -30,8 +30,6 @@ class AdvantageController
 
     public function store(): void
     {
-        Csrf::verify();
-
         $this->model->create([
             'title'        => trim(Request::post('title', '')),
             'description'  => trim(Request::post('description', '')),
@@ -59,7 +57,6 @@ class AdvantageController
 
     public function update(string $id): void
     {
-        Csrf::verify();
         $item = $this->model->find((int)$id);
         if (!$item) {
             Flash::set('error', 'Keunggulan tidak ditemukan.');
@@ -83,7 +80,6 @@ class AdvantageController
 
     public function destroy(string $id): void
     {
-        Csrf::verify();
         $item = $this->model->find((int)$id);
         if (!$item) {
             Flash::set('error', 'Keunggulan tidak ditemukan.');
@@ -99,7 +95,6 @@ class AdvantageController
 
     public function reorder(): void
     {
-        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $this->model->updateSortOrder($ids);
         header('Content-Type: application/json');

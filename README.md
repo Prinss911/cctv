@@ -9,7 +9,7 @@ Website company profile profesional untuk jasa pemasangan CCTV, dibangun dengan 
 - **Halaman Utama Dinamis** — Hero slider, paket harga, galeri, testimoni, dan logo klien semuanya dikelola lewat admin panel
 - **Dark / Light Mode** — Toggle tema yang tersimpan di `localStorage`, tidak ada flash saat halaman dimuat ulang
 - **Responsive Design** — Tampilan optimal di semua ukuran layar menggunakan Bootstrap 5.3
-- **CMS Admin Panel** — Kelola semua konten tanpa menyentuh kode: slider, paket harga, galeri, testimoni, klien, dan pengaturan situs
+- **CMS Admin Panel** — Kelola semua konten tanpa menyentuh kode: slider, paket harga, galeri, testimoni, klien, keunggulan, fitur tentang kami, FAQ, brand, users, dan pengaturan situs
 - **Drag-and-drop Reorder** — Urutkan item di setiap modul dengan SortableJS
 - **WhatsApp Integration** — Tombol WhatsApp mengambang dengan pesan greeting yang dapat dikonfigurasi; setiap paket harga memiliki pesan WhatsApp tersendiri
 - **SQLite Database** — Zero-konfigurasi, file database disimpan di `storage/db/app.db`; mendukung migrasi ke MySQL atau PostgreSQL
@@ -17,7 +17,7 @@ Website company profile profesional untuk jasa pemasangan CCTV, dibangun dengan 
 - **SEO Ready** — Meta title, meta description, Open Graph image, dan favicon semua dapat dikonfigurasi dari admin panel
 - **Keamanan Bawaan** — CSRF protection, bcrypt password hashing, rate limiting login, prepared statements, security headers
 - **Brand Logo CRUD** — Kelola logo brand/klien korporat dengan upload file, tampil di tab pricing halaman utama
-- **RBAC Authorization** — Tiga level akses: admin, editor, viewer, dicek via middleware di setiap route admin
+- **Role-based Access** — Tiga level akses: admin, editor, viewer, dicek via AuthMiddleware di setiap route admin
 - **Security Event Logging** — Semua event keamanan tercatat di `storage/logs/security.log` dengan detail terstruktur
 - **Dynamic Base URL** — Otomatis deteksi protokol, host, dan port, support proxy/CDN (Cloudflare, nginx)
 - **Docker Support** — Production-ready Docker image dengan PHP 8.2 + Apache + SQLite3, entrypoint auto-migration
@@ -130,13 +130,23 @@ Perintah ini akan membuat semua tabel dan mengisi data awal (termasuk akun admin
 
 **Catatan:** Proyek ini pernah menjalani fresh data reset pada v1.2.0 (2026-07-13). Data database dan file upload dihapus sepenuhnya, lalu di-migrate ulang dengan data awal.
 
-### 5. Jalankan Development Server
+### 5. Jalankan Aplikasi
 
+> **Untuk production**, gunakan metode deployment di bawah (Docker, cPanel, atau VPS). Bagian ini hanya untuk testing/development lokal.
+
+**PowerShell (Windows):**
+```powershell
+.\start-php.ps1
+# atau dengan port kustom:
+.\start-php.ps1 8082
+```
+
+**Command Prompt / Linux / macOS (development only):**
 ```bash
 php -S 0.0.0.0:8081 -t public
 ```
 
-> **Catatan:** Port 8081 digunakan agar kompatibel dengan Docker dan menghindari konflik. Untuk akses dari perangkat lain di jaringan yang sama, gunakan IP lokal host (contoh: `http://192.168.x.x:8081`).
+Port 8081 kompatibel dengan Docker dan menghindari konflik. Script `start-php.ps1` otomatis mendeteksi root proyek.
 
 ### 6. Buka di Browser
 
@@ -164,15 +174,20 @@ bayu-cctv/
 |-- app/                        # Kode inti aplikasi
 |   |-- Controllers/            # Controller halaman
 |   |   |-- Admin/              # Controller khusus admin panel
-|   |   |   |-- AuthController.php
-|   |   |   |-- BrandController.php     # CRUD logo brand/klien
-|   |   |   |-- DashboardController.php
-|   |   |   |-- GalleryController.php
-|   |   |   |-- PricingController.php
-|   |   |   |-- SettingsController.php
-|   |   |   |-- SliderController.php
-|   |   |   |-- TestimonialController.php
-|   |   |   `-- ClientController.php
+|   |   |   |-- AboutFeatureController.php  # CRUD fitur tentang kami
+|   |   |   |-- AdvantageController.php     # CRUD keunggulan
+|   |   |   |-- AuthController.php          # Login/logout admin
+|   |   |   |-- BrandController.php         # CRUD logo brand/klien
+|   |   |   |-- ClientController.php        # CRUD mitra klien
+|   |   |   |-- DashboardController.php     # Dashboard admin
+|   |   |   |-- FaqController.php           # CRUD FAQ
+|   |   |   |-- GalleryController.php       # CRUD galeri
+|   |   |   |-- PasswordResetController.php # Lupa password
+|   |   |   |-- PricingController.php       # CRUD paket harga
+|   |   |   |-- SettingsController.php      # Pengaturan situs
+|   |   |   |-- SliderController.php        # CRUD hero slider
+|   |   |   |-- TestimonialController.php   # CRUD testimoni
+|   |   |   `-- UsersController.php         # CRUD user admin
 |   |   `-- HomeController.php  # Controller halaman publik
 |   |-- Helpers/                # Class helper / utility
 |   |   |-- Auth.php            # Autentikasi & rate limiting
@@ -182,21 +197,23 @@ bayu-cctv/
 |   |   |-- Upload.php          # Upload & validasi file
 |   |   `-- View.php            # Render template & layout
 |   |-- Middleware/
-|   |   |-- AuthMiddleware.php      # Cek sesi login
-|   |   |-- CsrfMiddleware.php      # Verifikasi token CSRF
-|   |   |-- IdleTimeoutMiddleware.php # Auto-logout 30 menit inaktif
-|   |   `-- RbacMiddleware.php       # Kontrol akses berbasis role
+|   |   |-- AuthMiddleware.php      # Cek sesi login + role-based access
+|   |   `-- CsrfMiddleware.php      # Verifikasi token CSRF
 |   `-- Models/
-|       |-- Database.php        # Singleton koneksi PDO
-|       |-- BaseModel.php       # CRUD abstrak
-|       |-- UserModel.php
-|       |-- SettingModel.php
-|       |-- SliderModel.php
-|       |-- PricingModel.php
-|       |-- PricingBrandModel.php  # Brand logo untuk tab pricing
-|       |-- GalleryModel.php
-|       |-- TestimonialModel.php
-|       `-- ClientModel.php
+|       |-- Database.php          # Singleton koneksi PDO
+|       |-- BaseModel.php         # CRUD abstrak
+|       |-- AboutFeatureModel.php # Fitur tentang kami
+|       |-- AdvantageModel.php    # Keunggulan
+|       |-- ClientModel.php       # Mitra klien
+|       |-- FaqModel.php          # FAQ
+|       |-- GalleryModel.php      # Galeri
+|       |-- PasswordResetModel.php # Reset password
+|       |-- PricingBrandModel.php # Brand logo untuk tab pricing
+|       |-- PricingModel.php      # Paket harga
+|       |-- SettingModel.php      # Pengaturan situs
+|       |-- SliderModel.php       # Hero slider
+|       |-- TestimonialModel.php  # Testimoni
+|       `-- UserModel.php         # User admin
 |
 |-- bootstrap/
 |   |-- app.php                 # Inisialisasi aplikasi, helper global, security headers
@@ -217,7 +234,15 @@ bayu-cctv/
 |   |   |-- 005_create_gallery.php
 |   |   |-- 006_create_testimonials.php
 |   |   |-- 007_create_clients.php
-|   |   `-- 008_create_pricing_brands.php
+|   |   |-- 008_create_pricing_brands.php
+|   |   |-- 009_create_login_attempts.php
+|   |   |-- 010_create_password_resets.php
+|   |   |-- 999999_add_foreign_keys_and_constraints.php
+|   |   |-- add_soft_deletes.php
+|   |   |-- add_tag_to_sliders.php
+|   |   |-- 009_create_advantages.php
+|   |   |-- 010_create_about_features.php
+|   |   `-- 011_create_faqs.php
 |   `-- seeds/
 |       `-- DatabaseSeeder.php  # Data awal untuk development
 |
@@ -253,18 +278,53 @@ bayu-cctv/
 |       |-- home/
 |       |   `-- index.php       # Halaman utama
 |       `-- admin/              # View per modul admin
-|           |-- login.php
-|           |-- brand/             # CRUD logo brand/klien
+|           |-- about-features/     # CRUD fitur tentang kami
+|           |   |-- create.php
+|           |   |-- edit.php
+|           |   `-- index.php
+|           |-- advantages/         # CRUD keunggulan
+|           |   |-- create.php
+|           |   |-- edit.php
+|           |   `-- index.php
+|           |-- brand/              # CRUD logo brand/klien
+|           |   |-- create.php
+|           |   |-- edit.php
+|           |   `-- index.php
+|           |-- clients/            # CRUD mitra klien
 |           |   |-- create.php
 |           |   |-- edit.php
 |           |   `-- index.php
 |           |-- dashboard.php
-|           |-- gallery/
-|           |-- login.php
-|           |-- pricing/
-|           |-- settings/
-|           |-- sliders/
-|           `-- testimonials/
+|           |-- faqs/               # CRUD FAQ
+|           |   |-- create.php
+|           |   |-- edit.php
+|           |   `-- index.php
+|           |-- forgot.php          # Lupa password
+|           |-- gallery/            # CRUD galeri
+|           |   |-- create.php
+|           |   |-- edit.php
+|           |   `-- index.php
+|           |-- login.php           # Login admin
+|           |-- pricing/            # CRUD paket harga
+|           |   |-- create.php
+|           |   |-- edit.php
+|           |   `-- index.php
+|           |-- reset.php           # Reset password
+|           |-- settings/           # Pengaturan situs
+|           |   `-- index.php
+|           |-- sliders/            # CRUD hero slider
+|           |   |-- create.php
+|           |   |-- edit.php
+|           |   `-- index.php
+|           |-- testimonials/       # CRUD testimoni
+|           |   |-- create.php
+|           |   |-- edit.php
+|           |   `-- index.php
+|           `-- users/              # CRUD user admin
+|               |-- create.php
+|               |-- edit.php
+|               |-- index.php
+|               `-- password.php
 |
 |-- routes/
 |   |-- web.php                 # Rute halaman publik
@@ -315,6 +375,22 @@ Upload foto-foto hasil pemasangan CCTV. Setiap item memiliki caption dan dapat d
 
 Kelola ulasan pelanggan. Setiap testimoni memiliki nama pelanggan, isi ulasan, dan rating bintang (1-5).
 
+### Keunggulan (Advantages)
+
+Kelola 6 poin keunggulan yang muncul di halaman utama (section #tentang). Setiap keunggulan memiliki:
+- Judul, deskripsi, dan ikon
+- **Icon Picker Visual** — Pilih dari 19 ikon Font Awesome + input kustom
+- **Color Picker** — Warna border card yang berbeda per item
+- Drag-and-drop reorder via SortableJS
+
+### Fitur Tentang Kami
+
+Kelola fitur-fitur yang muncul di bagian intro section #tentang halaman utama. Setiap fitur memiliki ikon, judul, dan deskripsi singkat. Drag-and-drop untuk mengatur urutan tampil.
+
+### FAQ
+
+Kelola daftar pertanyaan umum seputar CCTV yang tampil di landing page sebagai accordion interaktif sebelum CTA. Dilengkapi JSON-LD structured data untuk SEO Rich Results. Setiap FAQ memiliki pertanyaan, jawaban, dan urutan tampil.
+
 ### Brand / Client Logo
 
 Kelola logo brand/klien korporat yang tampil di tab navigasi bagian pricing halaman utama. Modul terpisah dari "Client / Mitra" (yang tampil di bagian logo klien footer).
@@ -326,6 +402,13 @@ Kelola logo brand/klien korporat yang tampil di tab navigasi bagian pricing hala
 ### Client / Mitra
 
 Tampilkan logo-logo klien yang muncul di bagian "Klien Kami" halaman utama (footer/client section). Setiap item memiliki nama, logo, dan opsional link ke website.
+
+### Users
+
+Kelola akun admin yang dapat mengakses panel. Setiap user memiliki:
+- Nama, email (UNIQUE), dan password
+- **Role**: admin (penuh), editor (CRUD konten), viewer (read-only)
+- Password di-hash dengan bcrypt cost factor 12
 
 ### Pengaturan
 
@@ -556,7 +639,7 @@ Fitur keamanan yang sudah dibangun ke dalam aplikasi:
 | Password Hashing | `password_hash()` dengan algoritma bcrypt, cost factor 12 |
 | Path Traversal Protection | `Upload::sanitizePath()` memfilter null bytes, `../`, `./`, absolute paths; hanya alphanumeric/underscore/hyphen/dot diizinkan; path final diverifikasi via realpath() |
 | Rate Limiting | 5 gagal login → lock 15 menit; counter disimpan di tabel `auth_attempts` dengan SQLite `EXCLUSIVE` transaction untuk atomic increment; tracking per IP dan per username |
-| RBAC Authorization | Tiga level role: `admin` (penuh), `editor` (CRUD konten), `viewer` (read-only). Dicek via `RbacMiddleware` di setiap route admin |
+| Role-based Access | Tiga level role: `admin` (penuh), `editor` (CRUD konten), `viewer` (read-only). Dicek via `AuthMiddleware` di setiap route admin |
 | Security Event Logging | Semua event keamanan dicatat ke `storage/logs/security.log`: login gagal/berhasil, upload, akses tidak sah, CSRF violation, path traversal, role violation |
 | Security Headers | `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Content-Security-Policy` dikirim di setiap response |
 | Session Security | `session_regenerate_id(true)` dipanggil saat login berhasil; session fixation prevention |

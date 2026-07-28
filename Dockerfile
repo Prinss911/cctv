@@ -26,8 +26,9 @@ ENV APP_ENV=production \
 # Copy application files
 COPY . /var/www/html/
 
-# Set proper ownership and permissions for writable directories
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/public/uploads \
+# Ensure writable directories exist (may be absent from build context)
+RUN mkdir -p /var/www/html/storage /var/www/html/public/uploads \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/public/uploads \
     && chmod -R 755 /var/www/html/storage /var/www/html/public/uploads
 
 # Create entrypoint script for first-run conditional migration
@@ -35,11 +36,11 @@ RUN { \
     echo '#!/bin/sh'; \
     echo 'set -e'; \
     echo ''; \
-    echo '# Ensure storage directories exist (db, sessions)'; \
-    echo 'mkdir -p /var/www/html/storage/db /var/www/html/storage/sessions'; \
+    echo '# Ensure storage directories exist (db, sessions, logs)'; \
+    echo 'mkdir -p /var/www/html/storage/db /var/www/html/storage/sessions /var/www/html/storage/logs'; \
     echo ''; \
     echo '# Fix ownership on mounted volumes (NAS mount does not inherit image permissions)'; \
-    echo 'chown -R www-data:www-data /var/www/html/storage/sessions /var/www/html/storage/db'; \
+    echo 'chown -R www-data:www-data /var/www/html/storage/sessions /var/www/html/storage/db /var/www/html/storage/logs'; \
     echo ''; \
     echo '# Run migration only if the database does not exist yet'; \
     echo 'if [ ! -f /var/www/html/storage/db/app.db ]; then'; \

@@ -21,10 +21,8 @@ Aplikasi ini menggunakan arsitektur **MVC-like** (Model-View-Controller) yang di
                                                        │
                     ┌──────────────────────────────────▼───────┐
                      │              Middleware Chain               │
-                     │   AuthMiddleware                         │
-                     │   → IdleTimeoutMiddleware (30 mnt)       │
-                     │   → RbacMiddleware (cek role)            │
-                     │   → CsrfMiddleware (validasi POST)       │
+│   AuthMiddleware                         │
+│   → CsrfMiddleware (validasi POST)       │
                     └──────────────────────────────────┬────────┘
                                                        │
                ┌───────────────────────────────────────▼───────┐
@@ -135,8 +133,6 @@ Semua admin controller memanggil middleware di constructor:
 | Middleware | File | Fungsi |
 |---|---|---|
 | `AuthMiddleware` | `app/Middleware/AuthMiddleware.php` | Memastikan pengguna sudah login. Cek `$_SESSION['user_id']`, jika tidak ada redirect ke `/admin/login` |
-| `IdleTimeoutMiddleware` | `app/Middleware/IdleTimeoutMiddleware.php` | Cek idle timeout (default 30 menit). Jika `last_activity` > timeout, hapus session dan redirect ke login dengan flash message. Update `last_activity` setiap request valid |
-| `RbacMiddleware` | `app/Middleware/RbacMiddleware.php` | Verifikasi role-based access. Baca `users.role` dari session, cocokkan dengan `$requiredRole` per route. Role: `admin` (penuh), `editor` (CRUD konten), `viewer` (read-only). Jika role tidak memenuhi, tampilkan 403 |
 | `CsrfMiddleware` | `app/Middleware/CsrfMiddleware.php` | Verifikasi token CSRF pada POST request. Token dirotasi hanya untuk full page POST (bukan AJAX). Fallback validasi ke token sebelumnya untuk kompatibilitas AJAX |
 
 ### Pola CRUD Standar
@@ -150,6 +146,26 @@ Semua admin controller memanggil middleware di constructor:
 | `update($id)` | `POST /admin/resource/{id}` | Perbarui data |
 | `destroy($id)` | `POST /admin/resource/{id}/delete` | Hapus data |
 | `reorder()` | `POST /admin/resource/reorder` | Simpan urutan baru |
+
+| Method | Route | Aksi |
+|---|---|---|
+| `index()` | `GET /admin/about-features` | Tampilkan daftar semua fitur Tentang Kami |
+| `create()` | `GET /admin/about-features/create` | Tampilkan form tambah fitur Tentang Kami |
+| `store()` | `POST /admin/about-features` | Simpan fitur Tentang Kami baru |
+| `edit($id)` | `GET /admin/about-features/{id}/edit` | Tampilkan form edit fitur Tentang Kami |
+| `update($id)` | `POST /admin/about-features/{id}` | Perbarui fitur Tentang Kami |
+| `destroy($id)` | `POST /admin/about-features/{id}/delete` | Hapus fitur Tentang Kami |
+| `reorder()` | `POST /admin/about-features/reorder` | Simpan urutan baru fitur Tentang Kami |
+
+| Method | Route | Aksi |
+|---|---|---|
+| `index()` | `GET /admin/faqs` | Tampilkan daftar semua FAQ |
+| `create()` | `GET /admin/faqs/create` | Tampilkan form tambah FAQ |
+| `store()` | `POST /admin/faqs` | Simpan FAQ baru |
+| `edit($id)` | `GET /admin/faqs/{id}/edit` | Tampilkan form edit FAQ |
+| `update($id)` | `POST /admin/faqs/{id}` | Perbarui FAQ |
+| `destroy($id)` | `POST /admin/faqs/{id}/delete` | Hapus FAQ |
+| `reorder()` | `POST /admin/faqs/reorder` | Simpan urutan baru FAQ |
 
 > Metode DELETE dan PATCH tidak digunakan karena keterbatasan form HTML. Semua aksi modifikasi data menggunakan POST.
 

@@ -39,6 +39,46 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 - Semua 5 controller (Slider, Gallery, Brand, Client, Testimonial) diubah di store() dan update()
 - 10 view files diubah (create + edit untuk masing-masing modul)
 
+## [1.6.0] - 2026-07-28
+
+### Diubah
+- **Upload via URL → Embed mode** — `Upload::handleFromUrl()` tidak lagi mendownload file dari URL. Cukup validasi format URL, HTTP status, dan Content-Type headers, lalu simpan URL langsung ke database. Menghemat bandwidth dan storage.
+- **`upload_url()` auto-detect** — Helper global kini otomatis mendeteksi apakah path adalah URL lengkap (`http://`/`https://`) atau path lokal, dan mereturn sesuai format tanpa perubahan di view.
+- **Google Maps embed auto-extract** — SettingsController otomatis mengekstrak `src` dari full iframe HTML yang di-paste, sehingga user bisa paste seluruh `<iframe>` tanpa perlu manual ambil URL-nya.
+- **Google Maps validasi diperlonggar** — Sekarang menerima format `google.com/maps/place/...`, `maps.app.goo.gl/...`, dan `goo.gl/maps/...` selain format `/maps/embed` standar.
+
+### Diperbaiki
+- **Permissions-Policy header parse error** — Header disederhanakan dari format kompleks menjadi `geolocation=(), microphone=(), camera=(), interest-cohort=()` untuk kompatibilitas dengan structured header parser.
+- **`putenv()` undefined di shared hosting** — Dibungkus dengan `function_exists('putenv')` guard.
+- **`getenv()` mungkin kena disable** — Dibungkus dengan `function_exists('getenv')` guard.
+- **Docker entrypoint tidak buat `storage/logs/`** — Ditambahkan `mkdir -p storage/logs` di entrypoint agar SecurityLogger tidak error di first run.
+
+### Ditambahkan
+- **`docs/nginx.conf`** — File konfigurasi Nginx untuk deployment di server berbasis nginx (aaPanel, BT Panel, dll).
+
+### Detail Teknis
+- `Upload::handleFromUrl()`: Dari ~200 lines (download + validasi + thumbnail) menjadi ~50 lines (validasi URL + HTTP headers + return URL langsung)
+- `bootstrap/app.php`: `upload_url()` tambah deteksi `str_starts_with($path, 'http://') || str_starts_with($path, 'https://')`
+- `SettingsController.php`: Regex `src="([^"]+)"` untuk ekstrak iframe + validasi domain Google Maps diperlonggar
+- `bootstrap/app.php`: Permissions-Policy header di-simplify, `putenv()` dan `getenv()` pakai `function_exists()` guard
+- `Dockerfile`: Entrypoint tambah `mkdir -p storage/logs` sebelum migrasi
+
+## [1.5.1] - 2026-07-17
+
+### Dihapus
+- `database/seeds/DatabaseSeeder_new.php` — duplikat seeder, tidak pernah di-referensi
+- `cookie.txt`, `cookie2.txt`, `cookies.txt`, `cookies2.txt`, `cookies3.txt` — debug artifact HTTP request dump
+- `headers.txt`, `headers2.txt` — debug artifact header dump
+- `admin-sliders.png`, `footer-check.png`, `hero-test.png` — screenshot debug UI
+- `test_upload.jpg` — file test upload
+- `php-server.log` — log PHP built-in server
+
+### Diubah
+- Hapus `start-php.ps1` (port 8000 — salah), `start-php.bat`, `start-php-server.ps1` — redundant dev scripts
+- Hapus `router.php` — sudah tidak dipakai (server pake `-t public`)
+- Buat `start-php.ps1` baru — port 8081, auto-detect project path
+- Rapiin `.gitignore` — ganti entries spesifik file dengan glob pattern `*.txt`, `*.log`, `*.png/jpg/jpeg/bmp`, hapus entries untuk file yang sudah dihapus
+
 ## [1.5.0] - 2026-07-15
 
 ### Ditambahkan

@@ -3,7 +3,7 @@ namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\TestimonialModel;
-use App\Helpers\{View, Flash, Csrf, Upload, Request};
+use App\Helpers\{View, Flash, Upload, Request};
 use function trim;
 use function array_filter;
 
@@ -30,7 +30,6 @@ class TestimonialController
 
     public function store(): void
     {
-        Csrf::verify();
         $data = [
             'customer_name' => trim(Request::post('customer_name', '')),
             'content'       => trim(Request::post('content', '')),
@@ -78,7 +77,6 @@ class TestimonialController
 
     public function update(string $id): void
     {
-        Csrf::verify();
         $data = [
             'customer_name' => trim(Request::post('customer_name', '')),
             'content'       => trim(Request::post('content', '')),
@@ -121,7 +119,6 @@ class TestimonialController
 
     public function destroy(string $id): void
     {
-        Csrf::verify();
         $item = $this->model->find((int)$id);
         if (!$item) {
             Flash::set('error', 'Testimoni tidak ditemukan.');
@@ -178,7 +175,6 @@ class TestimonialController
 
     public function reorder(): void
     {
-        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $this->model->updateSortOrder($ids);
         header('Content-Type: application/json');

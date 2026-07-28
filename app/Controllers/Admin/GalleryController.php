@@ -3,7 +3,7 @@ namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\GalleryModel;
-use App\Helpers\{View, Flash, Csrf, Upload, Request};
+use App\Helpers\{View, Flash, Upload, Request};
 use function trim;
 use function array_filter;
 
@@ -30,7 +30,6 @@ class GalleryController
 
     public function store(): void
     {
-        Csrf::verify();
         $imageUrl = trim(Request::post('image_url', ''));
         if (!empty($imageUrl)) {
             $result = Upload::handleFromUrl($imageUrl, 'gallery');
@@ -70,7 +69,6 @@ class GalleryController
 
     public function update(string $id): void
     {
-        Csrf::verify();
         $data = [
             'title'      => trim(Request::post('title', '')),
             'category'   => trim(Request::post('category', 'indoor')),
@@ -111,7 +109,6 @@ class GalleryController
 
     public function destroy(string $id): void
     {
-        Csrf::verify();
         $item = $this->model->find((int)$id);
         if (!$item) {
             Flash::set('error', 'Foto tidak ditemukan.');
@@ -166,7 +163,6 @@ class GalleryController
 
     public function reorder(): void
     {
-        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $this->model->updateSortOrder($ids);
         header('Content-Type: application/json');

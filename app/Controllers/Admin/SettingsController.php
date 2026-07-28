@@ -4,7 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\SettingModel;
-use App\Helpers\{View, Flash, Csrf, Upload, Request};
+use App\Helpers\{View, Flash, Upload, Request};
 
 class SettingsController
 {
@@ -24,8 +24,6 @@ class SettingsController
 
     public function update(): void
     {
-        Csrf::verify();
-
         $all = $this->model->getAll('id ASC');
         foreach ($all as $setting) {
             $key = $setting['key'];
@@ -45,7 +43,13 @@ class SettingsController
             if (Request::has($key)) {
                 $value = trim(Request::post($key));
                 if ($key === 'maps_embed' && !empty($value)) {
-                    if (!preg_match('#^https?://(www\.)?google\.com/maps/embed#i', $value)) {
+                    // Auto-extract src URL from full iframe HTML
+                    if (str_starts_with($value, '<iframe')) {
+                        if (preg_match('#src="([^"]+)"#i', $value, $m)) {
+                            $value = $m[1];
+                        }
+                    }
+                    if (!preg_match('#^https?://(www\.)?(google\.com/maps|maps\.app\.goo\.gl|goo\.gl/maps)#i', $value)) {
                         continue;
                     }
                 }

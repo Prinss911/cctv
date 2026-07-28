@@ -4,7 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\FaqModel;
-use App\Helpers\{View, Flash, Csrf, Request};
+use App\Helpers\{View, Flash, Request};
 
 class FaqController
 {
@@ -29,8 +29,6 @@ class FaqController
 
     public function store(): void
     {
-        Csrf::verify();
-
         $this->model->create([
             'question'   => trim(Request::post('question', '')),
             'answer'     => trim(Request::post('answer', '')),
@@ -56,7 +54,6 @@ class FaqController
 
     public function update(string $id): void
     {
-        Csrf::verify();
         $item = $this->model->find((int)$id);
         if (!$item) {
             Flash::set('error', 'FAQ tidak ditemukan.');
@@ -78,7 +75,6 @@ class FaqController
 
     public function destroy(string $id): void
     {
-        Csrf::verify();
         $item = $this->model->find((int)$id);
         if (!$item) {
             Flash::set('error', 'FAQ tidak ditemukan.');
@@ -94,7 +90,6 @@ class FaqController
 
     public function reorder(): void
     {
-        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $this->model->updateSortOrder($ids);
         header('Content-Type: application/json');

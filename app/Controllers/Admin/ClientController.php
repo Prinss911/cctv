@@ -3,7 +3,7 @@ namespace App\Controllers\Admin;
 
 use App\Middleware\AuthMiddleware;
 use App\Models\ClientModel;
-use App\Helpers\{View, Flash, Csrf, Upload, Request};
+use App\Helpers\{View, Flash, Upload, Request};
 use function trim;
 use function array_filter;
 
@@ -30,7 +30,6 @@ class ClientController
 
     public function store(): void
     {
-        Csrf::verify();
         $logoUrl = trim(Request::post('logo_url', ''));
         if (!empty($logoUrl)) {
             $result = Upload::handleFromUrl($logoUrl, 'clients');
@@ -70,7 +69,6 @@ class ClientController
 
     public function update(string $id): void
     {
-        Csrf::verify();
         $data = [
             'name'       => trim(Request::post('name', '')),
             'website'    => trim(Request::post('website', '')),
@@ -111,7 +109,6 @@ class ClientController
 
     public function destroy(string $id): void
     {
-        Csrf::verify();
         $item = $this->model->find((int)$id);
         if (!$item) {
             Flash::set('error', 'Client tidak ditemukan.');
@@ -165,7 +162,6 @@ class ClientController
 
     public function reorder(): void
     {
-        Csrf::verify();
         $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
         $this->model->updateSortOrder($ids);
         header('Content-Type: application/json');
