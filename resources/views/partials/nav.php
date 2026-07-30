@@ -12,7 +12,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navMain">
-            <ul class="nav-links d-none d-lg-flex me-3">
+            <ul class="nav-links d-lg-flex me-3">
                 <li><a href="#beranda">Beranda</a></li>
                 <li><a href="#tentang">Tentang</a></li>
                 <li><a href="#harga">Harga</a></li>
@@ -21,7 +21,7 @@
                 <li><a href="#kontak">Kontak</a></li>
             </ul>
             <div class="d-flex align-items-center gap-2">
-                <a href="tel:<?= e(setting('phone_number')) ?>" class="nav-phone d-none d-xl-inline">
+                <a href="tel:<?= e(setting('phone_number')) ?>" class="nav-phone d-none d-lg-inline">
                     <i class="fas fa-phone-alt me-1"></i><?= e(setting('phone_number', '0812-3456-7890')) ?>
                 </a>
                 <button id="theme-toggle" onclick="toggleTheme()" class="theme-btn" title="Ganti tema" aria-label="Toggle dark mode">
@@ -31,15 +31,6 @@
                     <i class="fab fa-whatsapp me-1"></i>Hubungi
                 </a>
             </div>
-            <!-- Mobile menu -->
-            <ul class="navbar-nav d-lg-none mt-3" style="border-top:1px solid var(--border);padding-top:1rem">
-                <li class="nav-item"><a class="nav-link" href="#beranda">Beranda</a></li>
-                <li class="nav-item"><a class="nav-link" href="#tentang">Tentang</a></li>
-                <li class="nav-item"><a class="nav-link" href="#harga">Harga</a></li>
-                <li class="nav-item"><a class="nav-link" href="#galeri">Galeri</a></li>
-                <li class="nav-item"><a class="nav-link" href="#testimoni">Testimoni</a></li>
-                <li class="nav-item"><a class="nav-link" href="#kontak">Kontak</a></li>
-            </ul>
         </div>
     </div>
 </nav>
