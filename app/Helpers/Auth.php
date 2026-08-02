@@ -41,10 +41,13 @@ class Auth
             // Record failed attempt for IP-based rate limiting using atomic upsert
             // SQLite uses BEGIN IMMEDIATE for write lock (row-level locking via FOR UPDATE not supported)
             $driver = Database::getDriver();
+            $inTransaction = false;
             if ($driver === 'sqlite') {
                 $db->exec('BEGIN IMMEDIATE');
+                $inTransaction = true;
             } else {
                 $db->beginTransaction();
+                $inTransaction = true;
             }
             try {
                 // Lock the row for this IP/email combo
@@ -59,7 +62,11 @@ class Auth
                 $lockoutUntil = $row['lockout_until'] ?? 0;
 
                 if ($lockoutUntil && time() < $lockoutUntil) {
-                    $db->rollBack();
+                    if ($driver === 'sqlite') {
+                        $db->exec('ROLLBACK');
+                    } else {
+                        $db->rollBack();
+                    }
                     return false; // Lockout still active
                 }
 
@@ -100,9 +107,24 @@ class Auth
                     $stmt->execute([$ipAddress, $email, time(), $newLockoutUntil]);
                 }
 
-                $db->commit();
+                if ($driver === 'sqlite') {
+                    $db->exec('COMMIT');
+                } else {
+                    $db->commit();
+                }
+                $inTransaction = false;
             } catch (\Exception $e) {
-                $db->rollBack();
+                if ($inTransaction) {
+                    if ($driver === 'sqlite') {
+                        try {
+                            $db->exec('ROLLBACK');
+                        } catch (\Exception $rollbackEx) {
+                            // Ignore rollback failure; original exception takes precedence
+                        }
+                    } else {
+                        $db->rollBack();
+                    }
+                }
                 throw $e;
             }
 
