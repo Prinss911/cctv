@@ -31,8 +31,7 @@ $metaDesc = setting('meta_description', '');
     <?php endif; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"></noscript>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <?php
@@ -69,8 +68,7 @@ $metaDesc = setting('meta_description', '');
         echo '<style>' . $criticalCss . '</style>';
     }
     ?>
-    <link rel="preload" href="<?= asset('css/app.css') ?>" as="style" onload="this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="<?= asset('css/app.css') ?>"></noscript>
+    <link rel="stylesheet" href="<?= asset('css/app.css') ?>">
     <script src="<?= asset('js/theme-init.js') ?>" data-theme-key="cctv_theme"></script>
     <?php
     // JSON-LD Structured Data
