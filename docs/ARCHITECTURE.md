@@ -284,6 +284,22 @@ View::partial('whatsapp-widget');
 
 File partial disimpan di `resources/views/partials/`.
 
+**Catatan penting:** `View::partial()` adalah static method — variabel dari scope pemanggil TIDAK otomatis terlihat di dalam partial. Semua data harus dioper eksplisit via parameter array:
+
+```php
+// Benar: data dioper via array
+View::partial('crud-index', ['items' => $items, 'columns' => $columns, 'baseUrl' => '/admin/sliders']);
+// Salah: $items tidak akan terlihat di dalam partial
+View::partial('crud-index');
+```
+
+Partial admin yang diekstrak pada refactor v1.7.0:
+- `crud-index.php` — tabel CRUD standar (dipakai semua index modul admin; menerima `items`, `columns`, `baseCreateUrl`, `baseDeleteUrl`, dll)
+- `pagination.php` — kontrol paginasi (index admin ter-paginate sejak v1.7.0)
+- `icon-picker.php` — picker 19 ikon Font Awesome untuk form create/edit
+
+`View::partial()` juga mengekstrak data partial ke variabel lokal: `$name = $data['name'] ?? null`, sehingga di dalam partial langsung pakai `$items`, `$columns`, dst.
+
 ---
 
 ## Helpers
@@ -414,9 +430,11 @@ Urutan numerik penting karena runner mengurutkan file secara alfabetis.
 2. CsrfMiddleware::handle() -> verifikasi token CSRF
 3. Auth::attempt(email, password):
    a. Cek status akun: jika is_active = 0, tolak login
-   b. Cek rate limit dengan SQLite EXCLUSIVE transaction:
+   b. Cek rate limit dengan SQLite BEGIN IMMEDIATE transaction:
       - Query tabel auth_attempts untuk IP + username dalam 15 menit terakhir
       - Jika count >= 5: return 'locked' (tanpa increment)
+      - Commit/rollback via $db->exec('COMMIT') / $db->exec('ROLLBACK') untuk driver SQLite
+        (method PDO commit()/rollBack() konflik dengan BEGIN IMMEDIATE manual)
    c. Query UserModel::findByEmail()
    d. password_verify() cocokkan password dengan hash bcrypt (cost 12)
    e. Jika gagal:
@@ -442,27 +460,42 @@ Urutan numerik penting karena runner mengurutkan file secara alfabetis.
    -> Csrf::verify() bandingkan $_POST['_csrf'] dengan:
       a. $_SESSION['csrf_token'] (token saat ini) menggunakan hash_equals() -> jika cocok: lanjut
       b. Jika a gagal: bandingkan dengan $_SESSION['csrf_token_prev'] (token sebelumnya) -> jika cocok: lanjut
-      c. Jika keduanya gagal: HTTP 403 dan die()
+      c. Jika keduanya gagal: throw RuntimeException('CSRF token mismatch')
+   -> CsrfMiddleware menangkap exception:
+      - AJAX (X-Requested-With: XMLHttpRequest): response 403 JSON {'error': 'CSRF token mismatch.'}
+      - Non-AJAX: Flash::set('error') + redirect ke HTTP_REFERER (fallback /admin)
    -> Jika matched dengan token saat ini (a) DAN request bukan AJAX: rotasi token
       (generate baru, simpan yang lama ke csrf_token_prev)
    -> Jika matched dengan token lama (b): lanjutkan tanpa rotasi (untuk AJAX)
 ```
 
 `hash_equals()` digunakan sebagai ganti `===` untuk mencegah timing attack.
+Deteksi AJAX via `Content-Type: application/json` atau `X-Requested-With: XMLHttpRequest` (`Csrf::isAjaxRequest()`).
 Token hanya dirotasi pada POST request halaman penuh (bukan fetch/XHR) untuk menjaga kompatibilitas dengan AJAX request yang dikirim bersamaan.
 
 
 ### Rate Limiting Login
 
-Implementasi berbasis database table `auth_attempts` dengan SQLite EXCLUSIVE transaction untuk atomic increment:
+Implementasi berbasis database table `auth_attempts` dengan SQLite BEGIN IMMEDIATE transaction untuk atomic increment:
 
 - Struktur tabel: `id INTEGER PRIMARY KEY`, `ip_address TEXT`, `username TEXT`, `created_at TEXT`
 - Saat login gagal: `INSERT INTO auth_attempts (ip_address, username, created_at) VALUES (?, ?, datetime('now'))`
 - Sebelum login: `SELECT COUNT(*) FROM auth_attempts WHERE (ip_address = ? OR username = ?) AND created_at > datetime('now', '-15 minutes')`
 - Jika count >= 5: akun terkunci, `Auth::attempt()` langsung return `'locked'`
-- Seluruh operasi (count + insert) dibungkus dalam `BEGIN EXCLUSIVE TRANSACTION` / `COMMIT` untuk mencegah race condition pada concurrent request
+- Seluruh operasi (count + insert) dibungkus dalam `BEGIN IMMEDIATE` / `COMMIT` untuk mencegah race condition pada concurrent request
+- Untuk driver SQLite, commit/rollback dilakukan via `$db->exec('COMMIT')` / `$db->exec('ROLLBACK')` — method PDO `commit()`/`rollBack()` konflik dengan `BEGIN IMMEDIATE` manual dan membuat login gagal mengembalikan 500
 - Login berhasil: `DELETE FROM auth_attempts WHERE ip_address = ? OR username = ?`
 - Tracking per IP dan per username (jika attacker ganti IP, username tetap terblokir; jika ganti username, IP tetap terblokir)
+
+### Rate Limiting Reset Password
+
+Implementasi berbasis database table `password_reset_attempts` (migration `2026_08_02_000012_create_password_reset_attempts.php`):
+
+- Struktur tabel: `id INTEGER PRIMARY KEY`, `email TEXT NOT NULL`, `ip_address TEXT NOT NULL`, `attempted_at INTEGER`
+- Rate limit: max 3 request per email ATAU per IP dalam 1 jam (`PasswordResetModel::countRecentRequests($email, $ip, 3600)`)
+- Pengecekan dilakukan SEBELUM lookup user di `sendResetLink()` — respons tidak mengungkap apakah email terdaftar (anti enumerasi)
+- Jika user tidak ditemukan, dummy bcrypt verify dijalankan (cost 12, ~100ms) agar timing respons sama dengan jalur user valid
+- `recordAttempt($email, $ip)` mencatat setiap request; `cleanupResetAttempts()` membersihkan data kedaluwarsa
 
 ### Upload Security
 
@@ -746,10 +779,14 @@ Autoloader terdapat di `bootstrap/autoload.php` menggunakan `spl_autoload_regist
 ### Admin — Autentikasi
 
 | Method | URI | Controller@Method | Keterangan |
-|---|---|---|---|
+|---|---|---|
 | GET | `/admin/login` | `Admin\AuthController@showLogin` | Tampilkan form login |
 | POST | `/admin/login` | `Admin\AuthController@login` | Proses login |
-| POST | `/admin/logout` | `Admin\AuthController@logout` | Logout & destroy session |
+| POST | `/admin/logout` | `Admin\AuthController@logout` | Logout & destroy session (POST-only, CSRF-safe) |
+| GET | `/admin/forgot-password` | `Admin\PasswordResetController@showForgotForm` | Form lupa password |
+| POST | `/admin/forgot-password` | `Admin\PasswordResetController@sendResetLink` | Kirim link reset (rate-limited 3/jam/email-IP) |
+| GET | `/admin/reset-password` | `Admin\PasswordResetController@showResetForm` | Form reset password |
+| POST | `/admin/reset-password` | `Admin\PasswordResetController@resetPassword` | Proses reset password |
 
 ### Admin — Dashboard
 

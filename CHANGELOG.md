@@ -5,39 +5,38 @@ Semua perubahan penting pada proyek ini akan didokumentasikan di file ini.
 Format berdasarkan [Keep a Changelog](https://keepachangelog.com/id/1.0.0/),
 dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
-## [1.1.1] - 2026-07-03
+## [1.7.0] - 2026-08-02
+
+### Ditambahkan
+- **Production Hardening** — Paket penguatan keamanan production (lihat `docs/plans/production-hardening-plan.md`):
+  - **CSRF throw + rotate-AJAX** — `Csrf::verify()` kini melempar `RuntimeException` alih-alih `die()` langsung; token hanya dirotasi pada POST halaman penuh, request AJAX tidak memicu rotasi sehingga aksi reorder/fetch tetap valid
+  - **SSRF-safe upload** — `Upload::handleFromUrl()` tidak lagi melakukan request jaringan server-side (`get_headers()` dihapus); cukup validasi sintaksis URL: host valid, tanpa kredensial, tanpa karakter kontrol, ekstensi gambar whitelist
+  - **Paginated reorder gate** — `BaseModel::updateSortOrder()` memvalidasi setiap ID (`FILTER_VALIDATE_INT`, min 1) dan membungkus update dalam transaksi dengan rollback otomatis
+  - **Session/CSP via proxy** — Deteksi HTTPS via `X-Forwarded-Proto` (Cloudflare); session cookie `secure` mengikuti hasil deteksi; HSTS hanya dikirim saat HTTPS; CSP diperbarui (`img-src` tambah `https:`, `script-src` tanpa `unsafe-inline`, `frame-src` untuk Google Maps, `object-src 'none'`)
+  - **POST-only logout** — Route `/admin/logout` diubah dari GET menjadi POST untuk mencegah CSRF logout
+  - **Reset password rate-limit + hashed token** — Rate limit 3 request/jam per email ATAU IP via tabel baru `password_reset_attempts`; dicek SEBELUM lookup user (anti-enumerasi email); dummy bcrypt verify untuk timing equalization
+- **Paginasi index admin** — Semua halaman index modul admin kini di-paginate (partial `pagination.php`)
+- **Extract partials** — `crud-index`, `pagination`, `icon-picker` diekstrak menjadi partial untuk mengurangi duplikasi view
+- **Consolidate CSS/JS** — CSS/JS publik dan admin dikonsolidasi; `theme-init.js` baru sebagai anti-FOUT (flash of wrong theme)
 
 ### Diperbaiki
-- **Dynamic base_url** — Helper `asset()`, `upload_url()`, `url()` sekarang otomatis mendeteksi protokol, host, dan port dari request (`$_SERVER['REQUEST_SCHEME']`, `HTTP_HOST`, `SERVER_PORT`), support proxy/CDN di belakang reverse proxy (Cloudflare, nginx, dll)
-- **IPv4 binding** — PHP development server bind ke `0.0.0.0:8081` agar bisa diakses dari container/network eksternal
-
-### Ditambahkan
-- **Dockerfile** — Production-ready Docker image berbasis `php:8.2-apache` dengan Apache mod_rewrite, SQLite3, entrypoint untuk first-run auto-migration
-- **docker-compose.yml** — Service definition port `8081:80`, volume mount untuk persistent storage dan uploads, environment production default
-- **libsqlite3-dev** — Dependency SQLite untuk environment Docker
+- **Login gagal mengembalikan 500** — SQLite `BEGIN IMMEDIATE` memutus state commit/rollback PDO; kini `$db->exec('COMMIT')` / `$db->exec('ROLLBACK')` dipakai untuk driver SQLite
+- **CSP memblokir preload stylesheet** — Inline `onload` handler pada `<link rel="preload">` dan font `media="print"` tidak diizinkan tanpa `unsafe-inline`; diganti `<link rel="stylesheet">` biasa
+- **Halaman admin kosong (regression)** — 4 view index (pricing, gallery, testimonials, sliders) tidak mengoper `$items` ke partial `crud-index` setelah refactor extract partial; ditambahkan `'items' => $items`
+- **Responsive mobile fixes** — Duplicate media queries dihapus, touch targets diperbaiki, hover effect, menu navbar mobile, perbaikan UI lainnya
 
 ### Detail Teknis
-- Dockerfile: multi-stage entrypoint script, auto-detect first start & run `migrate.php --seed`
-- docker-compose: bridge network, restart policy `unless-stopped`, bind mount `.env` read-only
-- Dynamic URL: support `HTTP_X_FORWARDED_HOST`, `HTTPS`, `SERVER_PORT` auto-detection
-
-## [1.2.0] - 2026-07-13
-
-### Ditambahkan
-- **Upload Gambar via URL** — Setiap modul (Slider, Gallery, Brand, Client, Testimonial) kini mendukung upload gambar melalui URL internet sebagai alternatif upload file
-- `Upload::handleFromUrl()` — Method baru di `Upload.php` untuk mendownload gambar dari URL, dengan validasi keamanan berlapis (MIME type via finfo, dimensi max 4000px, ukuran max 5MB, getimagesize(), path traversal protection, filename acak, thumbnail generation)
-- **Field input URL** — Setiap halaman create/edit admin panel kini memiliki input URL gambar di samping upload file (image_url, logo_url, screenshot_url)
-
-### Diubah
-- **Fresh data reset** — Semua data database dan file upload dihapus sepenuhnya; migrasi dijalankan ulang dengan data awal (default values, akun admin, contoh slider, paket harga, testimoni)
-
-### Detail Teknis
-- `Upload::handleFromUrl()` menggunakan `file_get_contents()` dengan stream context timeout 15s, user-agent 'BayuCCTV/1.0', follow redirects
-- Temp file di `sys_get_temp_dir()` di-unlink pada setiap jalur error sebelum return
-- Copy + unlink untuk cross-filesystem safety (bukan move_uploaded_file yang khusus upload form)
-- Prioritas: URL lebih diutamakan daripada file upload jika keduanya diisi
-- Semua 5 controller (Slider, Gallery, Brand, Client, Testimonial) diubah di store() dan update()
-- 10 view files diubah (create + edit untuk masing-masing modul)
+- `app/Helpers/Csrf.php`: `verify()` throw `RuntimeException`; `isAjaxRequest()` deteksi `Content-Type: application/json` / `X-Requested-With: XMLHttpRequest`; rotasi token hanya non-AJAX
+- `app/Middleware/CsrfMiddleware.php`: catch → log `SecurityLogger::logCsrfFailure()` → AJAX: 403 JSON; non-AJAX: flash error + redirect ke referer
+- `app/Helpers/Auth.php`: `attempt()` pakai `$db->exec('BEGIN IMMEDIATE')` + `$db->exec('COMMIT'/'ROLLBACK')` untuk SQLite (bukan method PDO yang konflik); hapus helper session-based `isLockedOut()`/`lockoutRemaining()`
+- `app/Helpers/Upload.php`: `handleFromUrl()` hanya validasi sintaksis URL — tanpa network request (SSRF-safe)
+- `app/Models/BaseModel.php`: `updateSortOrder()` validasi ID + transaksi atomic dengan rollback
+- `app/Models/PasswordResetModel.php`: `recordAttempt()`, `countRecentRequests()`, `cleanupResetAttempts()` untuk rate limit reset
+- Migration baru: `2026_08_02_000012_create_password_reset_attempts.php` (tabel `password_reset_attempts` + 2 index)
+- `bootstrap/app.php`: proxy-aware HTTPS detection, HSTS conditional, CSP diperbarui
+- `routes/admin.php`: `/admin/logout` GET → POST
+- `public/assets/js/theme-init.js`: skrip anti-FOUT dipisah ke file sendiri
+- `docs/ARCHITECTURE.md`: tabel route logout di-update ke POST
 
 ## [1.6.0] - 2026-07-28
 
@@ -130,6 +129,39 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 - bootstrap/app.php: `base_url()` tambah `filter_var($hostPart, FILTER_VALIDATE_IP)`
 - Dockerfile: Entrypoint chown `storage/sessions/` di runtime untuk volume mount
 
+## [1.2.0] - 2026-07-13
+
+### Ditambahkan
+- **Upload Gambar via URL** — Setiap modul (Slider, Gallery, Brand, Client, Testimonial) kini mendukung upload gambar melalui URL internet sebagai alternatif upload file
+- `Upload::handleFromUrl()` — Method baru di `Upload.php` untuk mendownload gambar dari URL, dengan validasi keamanan berlapis (MIME type via finfo, dimensi max 4000px, ukuran max 5MB, getimagesize(), path traversal protection, filename acak, thumbnail generation)
+- **Field input URL** — Setiap halaman create/edit admin panel kini memiliki input URL gambar di samping upload file (image_url, logo_url, screenshot_url)
+
+### Diubah
+- **Fresh data reset** — Semua data database dan file upload dihapus sepenuhnya; migrasi dijalankan ulang dengan data awal (default values, akun admin, contoh slider, paket harga, testimoni)
+
+### Detail Teknis
+- `Upload::handleFromUrl()` menggunakan `file_get_contents()` dengan stream context timeout 15s, user-agent 'BayuCCTV/1.0', follow redirects
+- Temp file di `sys_get_temp_dir()` di-unlink pada setiap jalur error sebelum return
+- Copy + unlink untuk cross-filesystem safety (bukan move_uploaded_file yang khusus upload form)
+- Prioritas: URL lebih diutamakan daripada file upload jika keduanya diisi
+- Semua 5 controller (Slider, Gallery, Brand, Client, Testimonial) diubah di store() dan update()
+- 10 view files diubah (create + edit untuk masing-masing modul)
+
+## [1.1.1] - 2026-07-03
+
+### Diperbaiki
+- **Dynamic base_url** — Helper `asset()`, `upload_url()`, `url()` sekarang otomatis mendeteksi protokol, host, dan port dari request (`$_SERVER['REQUEST_SCHEME']`, `HTTP_HOST`, `SERVER_PORT`), support proxy/CDN di belakang reverse proxy (Cloudflare, nginx, dll)
+- **IPv4 binding** — PHP development server bind ke `0.0.0.0:8081` agar bisa diakses dari container/network eksternal
+
+### Ditambahkan
+- **Dockerfile** — Production-ready Docker image berbasis `php:8.2-apache` dengan Apache mod_rewrite, SQLite3, entrypoint untuk first-run auto-migration
+- **docker-compose.yml** — Service definition port `8081:80`, volume mount untuk persistent storage dan uploads, environment production default
+- **libsqlite3-dev** — Dependency SQLite untuk environment Docker
+
+### Detail Teknis
+- Dockerfile: multi-stage entrypoint script, auto-detect first start & run `migrate.php --seed`
+- docker-compose: bridge network, restart policy `unless-stopped`, bind mount `.env` read-only
+- Dynamic URL: support `HTTP_X_FORWARDED_HOST`, `HTTPS`, `SERVER_PORT` auto-detection
 
 ## [1.0.0] - 2024-XX-XX
 ### Ditambahkan

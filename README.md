@@ -632,16 +632,19 @@ Fitur keamanan yang sudah dibangun ke dalam aplikasi:
 | Fitur | Implementasi |
 |---|---|
 | Banned Extension Check | Upload menolak file dengan ekstensi berbahaya (`.php`, `.pht`, `.phtml`, `.php4`, `.php5`, `.phar`, `.htaccess`, `.htpasswd`, `.shtml`, `.inc`) |
-| CSRF Protection | Token acak 64-char hex per sesi, dirotasi setelah POST halaman penuh; AJAX request dilindungi via fallback validasi token sebelumnya |
+| CSRF Protection | Token acak 64-char hex per sesi, dirotasi setelah POST halaman penuh; AJAX request dilindungi via fallback validasi token sebelumnya; verifikasi gagal → throw + redirect (non-AJAX) atau 403 JSON (AJAX) |
 | Filename Sanitization | Nama file diacak dengan `uniqid() + time()`, ekstensi diambil dari MIME type |
 | Idle Timeout | Session otomatis logout setelah 30 menit tidak ada aktivitas, dengan flash message notifikasi |
 | Image Content Integrity | Validasi gambar via `getimagesize()` selain MIME type check; dimensi maksimal 4000x4000 piksel |
 | Password Hashing | `password_hash()` dengan algoritma bcrypt, cost factor 12 |
 | Path Traversal Protection | `Upload::sanitizePath()` memfilter null bytes, `../`, `./`, absolute paths; hanya alphanumeric/underscore/hyphen/dot diizinkan; path final diverifikasi via realpath() |
-| Rate Limiting | 5 gagal login → lock 15 menit; counter disimpan di tabel `auth_attempts` dengan SQLite `EXCLUSIVE` transaction untuk atomic increment; tracking per IP dan per username |
+| Rate Limiting | 5 gagal login → lock 15 menit; counter disimpan di tabel `auth_attempts` dengan SQLite `BEGIN IMMEDIATE` transaction untuk atomic increment (commit/rollback via `$db->exec()`); tracking per IP dan per username |
+| Logout Protection | Route `/admin/logout` POST-only (CSRF-safe) — tidak bisa logout via URL GET |
+| Reset Password Rate Limiting | Max 3 request/jam per email ATAU IP via tabel `password_reset_attempts`; dicek sebelum lookup user (anti enumerasi email) + dummy bcrypt verify untuk timing equalization |
+| SSRF-safe URL Upload | `Upload::handleFromUrl()` (embed mode) tidak melakukan request jaringan server-side; hanya validasi sintaksis URL: host valid, tanpa kredensial, tanpa karakter kontrol, ekstensi gambar whitelist |
 | Role-based Access | Tiga level role: `admin` (penuh), `editor` (CRUD konten), `viewer` (read-only). Dicek via `AuthMiddleware` di setiap route admin |
 | Security Event Logging | Semua event keamanan dicatat ke `storage/logs/security.log`: login gagal/berhasil, upload, akses tidak sah, CSRF violation, path traversal, role violation |
-| Security Headers | `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Content-Security-Policy` dikirim di setiap response |
+| Security Headers | `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Content-Security-Policy` dikirim di setiap response; HSTS hanya dikirim saat HTTPS; deteksi HTTPS via `X-Forwarded-Proto` (proxy/Cloudflare) |
 | Session Security | `session_regenerate_id(true)` dipanggil saat login berhasil; session fixation prevention |
 | SQL Injection | Seluruh query menggunakan PDO prepared statements |
 | Storage Protection | `storage/.htaccess` memblokir akses langsung ke file di folder storage |
