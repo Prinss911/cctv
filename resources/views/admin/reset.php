@@ -17,12 +17,12 @@
             <div class="mb-3">
                 <label for="password" class="form-label">Password Baru</label>
                 <input type="password" class="form-control" id="password" name="password"
-                       placeholder="Masukkan password baru" required minlength="6">
+                       placeholder="Masukkan password baru" required minlength="8">
             </div>
             <div class="mb-3">
                 <label for="confirm_password" class="form-label">Konfirmasi Password</label>
                 <input type="password" class="form-control" id="confirm_password" name="confirm_password"
-                       placeholder="Ulangi password baru" required minlength="6">
+                       placeholder="Ulangi password baru" required minlength="8">
             </div>
             <button type="submit" class="login-btn">
                 <i class="fas fa-save me-2"></i>Simpan Password Baru

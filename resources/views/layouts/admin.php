@@ -19,7 +19,7 @@ $isLogin = $currentPath === '/admin/login';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <link rel="stylesheet" href="<?= asset('css/admin.css') ?>">
-    <script>(function(){var t=localStorage.getItem('cctv_admin_theme')||'light';document.documentElement.setAttribute('data-bs-theme',t)})();</script>
+<script src="<?= asset('js/theme-init.js') ?>" data-theme-key="cctv_admin_theme"></script>
 </head>
 <body>
 <a href="#main-content" class="skip-link visually-hidden-focusable">Skip to main content</a>
@@ -57,15 +57,15 @@ $isLogin = $currentPath === '/admin/login';
             </ul>
             <div class="sidebar-sep"></div>
             <ul class="nav flex-column" aria-label="Account navigation">
-                <li class="nav-item"><a class="nav-link" href="<?= url('/') ?>" target="_blank" rel="noopener" aria-label="Lihat website (opens in new tab)"><i class="fas fa-external-link"></i>Lihat Website</a></li>
-                <li class="nav-item"><a class="nav-link text-danger" href="<?= url('/admin/logout?_csrf=' . urlencode(\App\Helpers\Csrf::token())) ?>"><i class="fas fa-right-from-bracket"></i>Logout</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= url('/') ?>" target="_blank" rel="noopener noreferrer" aria-label="Lihat website (opens in new tab)"><i class="fas fa-external-link"></i>Lihat Website</a></li>
+                <li class="nav-item"><form method="POST" action="<?= url('/admin/logout') ?>" class="d-inline"><input type="hidden" name="_csrf" value="<?= \App\Helpers\Csrf::token() ?>"><button type="submit" class="nav-link text-danger bg-transparent border-0 text-start w-100" title="Logout"><i class="fas fa-right-from-bracket"></i>Logout</button></form></li>
             </ul>
         </nav>
         <div id="main-content" class="flex-grow-1">
             <div class="admin-topbar">
                 <button class="topbar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true"><i class="fas fa-bars"></i></button>
                 <div class="topbar-right">
-                    <button class="topbar-theme" onclick="toggleAdminTheme()" title="Tema" aria-label="Toggle dark mode">
+                    <button class="topbar-theme" id="admin-theme-toggle" type="button" title="Tema" aria-label="Toggle dark mode">
                         <i id="admin-theme-icon" class="fas fa-moon"></i>
                     </button>
                     <a href="<?= url('/admin/users/password') ?>" class="topbar-theme" title="Ganti Password" aria-label="Ganti Password">

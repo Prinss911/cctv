@@ -7,6 +7,7 @@ use App\Helpers\Flash;
 use App\Helpers\Router;
 use App\Helpers\View;
 use App\Helpers\Request;
+use App\Helpers\Auth;
 use App\Models\UserModel;
 use App\Models\PasswordResetModel;
 
@@ -54,23 +55,27 @@ class PasswordResetController
             exit;
         }
 
-        // Find user by email
-        $user = $this->userModel->findByEmail($email);
-        
-        // Always show the same message to prevent email enumeration
-        Flash::set('success', 'Jika email terdaftar, Anda akan menerima link reset password.');
-        
-        if (!$user) {
+        // Rate limit: max 3 requests per email OR IP per hour (checked BEFORE user lookup
+        // so the response does not reveal whether an email exists)
+        $ip = Auth::getClientIp();
+        $this->passwordResetModel->cleanupResetAttempts();
+        if ($this->passwordResetModel->countRecentRequests($email, $ip, 3600) >= 3) {
+            Flash::set('error', 'Terlalu banyak permintaan reset password. Coba lagi nanti.');
             redirect('/admin/forgot-password');
             exit;
         }
+        $this->passwordResetModel->recordAttempt($email, $ip);
 
-        // Rate limit: max 3 requests per email per hour
-        $db = \App\Models\Database::getInstance();
-        $stmt = $db->prepare("SELECT COUNT(*) FROM password_resets WHERE email = ? AND created_at > datetime('now', '-1 hour')");
-        $stmt->execute([$email]);
-        if ((int)$stmt->fetchColumn() >= 3) {
-            Flash::set('error', 'Terlalu banyak permintaan reset password. Coba lagi nanti.');
+        // Find user by email
+        $user = $this->userModel->findByEmail($email);
+
+        // Always show the same message to prevent email enumeration
+        Flash::set('success', 'Jika email terdaftar, Anda akan menerima link reset password.');
+
+        if (!$user) {
+            // Non-enumeration: run a dummy bcrypt verify so response timing matches
+            // the real user path (cost 12, ~100ms)
+            password_verify('dummy-reset-timing', '$2y$12$I08h5A7D5HDRB5RrxAyGf.CECby0kUF.87xKQIcUsU9V.PMaNpgZq');
             redirect('/admin/forgot-password');
             exit;
         }

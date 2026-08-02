@@ -4,7 +4,7 @@
 
 $router->get('/admin/login', 'Admin\AuthController@showLogin');
 $router->post('/admin/login', 'Admin\AuthController@login', [\App\Middleware\CsrfMiddleware::class]);
-$router->get('/admin/logout', 'Admin\AuthController@logout');
+$router->post('/admin/logout', 'Admin\AuthController@logout');
 
 // Password reset routes (without auth middleware - accessible without login)
 $router->get('/admin/forgot-password', 'Admin\PasswordResetController@showForgotForm');

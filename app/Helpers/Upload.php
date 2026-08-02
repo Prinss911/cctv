@@ -200,7 +200,7 @@ class Upload
 
     /**
      * Handle image upload from URL
-     * Downloads image from URL, validates it, and saves to uploads directory
+     * Validates a remote image URL for client-side embed usage
      * Returns array with 'path' on success, or ['error' => message] on failure
      */
     public static function handleFromUrl(string $url, string $directory): array
@@ -224,39 +224,38 @@ class Upload
             return ['error' => 'Hanya protokol HTTP dan HTTPS yang diizinkan.'];
         }
 
-        // Quick content-type check via HTTP headers (lightweight, no download)
-        $headers = @get_headers($url, true);
-        if ($headers === false) {
+        // Require a valid host and reject credentialed URLs to keep embed URLs predictable
+        if (empty($parsedUrl['host']) || !is_string($parsedUrl['host'])) {
             SecurityLogger::logUpload('url_upload', false);
-            return ['error' => 'URL tidak dapat dijangkau.'];
+            return ['error' => 'Host URL tidak valid.'];
         }
 
-        $statusCode = 0;
-        if (isset($headers[0]) && is_string($headers[0])) {
-            preg_match('#HTTP/\d\.\d\s+(\d+)#', $headers[0], $m);
-            $statusCode = (int)($m[1] ?? 0);
-        }
-        if ($statusCode < 200 || $statusCode >= 400) {
+        if (isset($parsedUrl['user']) || isset($parsedUrl['pass'])) {
             SecurityLogger::logUpload('url_upload', false);
-            return ['error' => 'URL mengembalikan status HTTP ' . $statusCode . '.'];
+            return ['error' => 'URL dengan kredensial tidak diizinkan.'];
         }
 
-        // Check content-type is an image
-        $contentType = '';
-        if (isset($headers['Content-Type'])) {
-            $ct = $headers['Content-Type'];
-            $contentType = is_array($ct) ? end($ct) : $ct;
-        }
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'image/avif'];
-        if (!empty($contentType) && !in_array($contentType, $allowedTypes)) {
+        // Reject control characters that could lead to header or attribute confusion downstream
+        if (preg_match('/[\x00-\x1F\x7F]/', $url)) {
             SecurityLogger::logUpload('url_upload', false);
-            return ['error' => 'URL bukan gambar. Tipe: ' . $contentType];
+            return ['error' => 'URL mengandung karakter yang tidak valid.'];
+        }
+
+        // In embed mode we must not make any server-side network request.
+        // Only perform local syntactic validation of common image-style URLs.
+        $path = isset($parsedUrl['path']) && is_string($parsedUrl['path']) ? $parsedUrl['path'] : '';
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        if ($path !== '' && $extension !== '' && !in_array($extension, $allowedExtensions, true)) {
+            SecurityLogger::logUpload('url_upload', false);
+            return ['error' => 'Ekstensi gambar pada URL tidak diizinkan.'];
         }
 
         // Log successful embed
         SecurityLogger::logUpload(basename($url), true);
 
-        // Return the URL directly (embed mode — no download)
+        // Return the URL directly (embed mode — no download and no server-side fetch)
         return ['path' => $url];
     }
 

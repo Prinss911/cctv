@@ -61,7 +61,7 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
                             <h1><?= e($slider['title']) ?></h1>
                             <p><?= e($slider['subtitle']) ?></p>
                             <div class="d-flex gap-3 flex-wrap">
-                                <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener" class="btn-hero btn-hero-fill">
+                <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener noreferrer" class="btn-hero btn-hero-fill">
                                     <i class="fab fa-whatsapp"></i> Hubungi Kami
                                 </a>
                                 <a href="#harga" class="btn-hero btn-hero-ghost">
@@ -113,7 +113,7 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
-                <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener" class="btn-hero btn-hero-fill mt-4" style="display:inline-flex">
+                <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener noreferrer" class="btn-hero btn-hero-fill mt-4" style="display:inline-flex">
                     <i class="fab fa-whatsapp"></i> Konsultasi Gratis
                 </a>
             </div>
@@ -203,8 +203,8 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
                                             <li><i class="fas fa-check"></i> <?= e($feat['feature']) ?></li>
                                             <?php endforeach; ?>
                                         </ul>
-                                         <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode($pkg['whatsapp_message']) ?>"
-                                            target="_blank" rel="noopener" class="btn-price">
+                                        <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode($pkg['whatsapp_message']) ?>"
+                                           target="_blank" rel="noopener noreferrer" class="btn-price">
                                              <i class="fab fa-whatsapp me-1"></i>Pesan Sekarang
                                          </a>
                                      </div>
@@ -246,7 +246,7 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
                             <?php endforeach; ?>
                         </ul>
                          <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode($pkg['whatsapp_message']) ?>"
-                            target="_blank" rel="noopener" class="btn-price">
+                            target="_blank" rel="noopener noreferrer" class="btn-price">
                              <i class="fab fa-whatsapp me-1"></i>Pesan Sekarang
                          </a>
                      </div>
@@ -387,7 +387,7 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
             <?php if (!empty($faqs)): ?>
                 <?php foreach ($faqs as $i => $faq): ?>
                 <div class="faq-item <?= $i === 0 ? 'open' : '' ?>">
-                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open')" type="button">
+                    <button class="faq-question" type="button" aria-expanded="<?= $i === 0 ? 'true' : 'false' ?>">
                         <span><?= e($faq['question']) ?></span>
                         <span class="faq-icon"><i class="fas fa-plus"></i></span>
                     </button>
@@ -413,7 +413,7 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
             Konsultasi gratis dan survey lokasi tanpa biaya. Hubungi kami untuk penawaran terbaik.
         </p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
-            <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode('Halo, saya ingin konsultasi pemasangan CCTV.') ?>" target="_blank" rel="noopener" class="btn-hero btn-hero-fill">
+            <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>?text=<?= urlencode('Halo, saya ingin konsultasi pemasangan CCTV.') ?>" target="_blank" rel="noopener noreferrer" class="btn-hero btn-hero-fill">
                 <i class="fab fa-whatsapp"></i> Chat WhatsApp
             </a>
             <a href="tel:<?= e(setting('phone_number')) ?>" class="btn-hero btn-hero-ghost">

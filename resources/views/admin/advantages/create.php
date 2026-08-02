@@ -47,14 +47,3 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Sync color picker and text input
-    const colorPicker = document.getElementById('border_color');
-    const colorText = document.getElementById('border_color_text');
-    colorPicker.addEventListener('input', function() { colorText.value = this.value; });
-    colorText.addEventListener('input', function() { colorPicker.value = this.value; });
-
-});
-</script>
-

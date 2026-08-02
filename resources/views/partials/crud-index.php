@@ -1,3 +1,4 @@
+<?php $crudLastPage = (int) ($pagination['last_page'] ?? 1); ?>
 <div class="page-head">
     <h4 class="page-title"><?= e($title) ?></h4>
     <a href="<?= url($addUrl) ?>" class="btn-admin btn-admin-fill"><i class="fas fa-plus"></i> <?= e($addLabel ?? 'Tambah') ?></a>
@@ -18,17 +19,17 @@
             <?php endforeach; ?>
             <th class="text-nowrap" style="min-width:90px;">Aksi</th>
         </tr></thead>
-        <tbody id="sortable-list" data-url="<?= url($reorderUrl) ?>">
+        <tbody id="sortable-list" data-url="<?= url($reorderUrl) ?>" data-last-page="<?= (int) $crudLastPage ?>">
         <?php foreach ($items as $item): ?>
             <tr data-id="<?= $item['id'] ?>">
-                <td><i class="fas fa-grip-vertical handle" role="button" aria-grabbed="false" aria-label="Drag to reorder"></i></td>
+                <td><i class="fas fa-grip-vertical handle<?= $crudLastPage > 1 ? ' disabled' : '' ?>" role="button" aria-grabbed="false" aria-label="Drag to reorder"<?= $crudLastPage > 1 ? ' title="Urutan tidak bisa diubah saat daftar memiliki lebih dari 1 halaman"' : '' ?>></i></td>
                 <?php foreach ($columns as $col): ?>
                 <td<?php if (!empty($col['class'])): ?> class="<?= e($col['class']) ?>"<?php endif; ?>><?= $col['render']($item) ?></td>
                 <?php endforeach; ?>
                 <td class="text-nowrap">
                     <div class="d-flex gap-1">
                         <a href="<?= url($baseEditUrl . '/' . $item['id'] . '/edit') ?>" class="btn-act" aria-label="Edit"><i class="fas fa-pen"></i></a>
-                        <form method="POST" action="<?= url($baseDeleteUrl . '/' . $item['id'] . '/delete') ?>" class="delete-form">
+                        <form method="POST" action="<?= url($baseDeleteUrl . '/' . $item['id'] . '/delete') ?>" class="delete-form" data-confirm="Yakin ingin menghapus?">
                             <?= \App\Helpers\Csrf::field() ?>
                             <button type="submit" class="btn-act danger" aria-label="Delete"><i class="fas fa-trash-can"></i></button>
                         </form>

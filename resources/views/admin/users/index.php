@@ -20,7 +20,7 @@
                     <div class="d-flex gap-1">
                         <a href="<?= url('/admin/users/'.$u['id'].'/edit') ?>" class="btn-act" aria-label="Edit <?= e($u['name']) ?>"><i class="fas fa-pen"></i></a>
                         <?php if (\App\Helpers\Auth::user()['id'] != $u['id']): ?>
-                        <form method="POST" action="<?= url('/admin/users/'.$u['id'].'/delete') ?>" class="delete-form" onsubmit="return confirm('Hapus pengguna <?= e($u['name']) ?>?')">
+                        <form method="POST" action="<?= url('/admin/users/'.$u['id'].'/delete') ?>" class="delete-form" data-confirm="<?= e('Hapus pengguna ' . $u['name'] . '?') ?>">
                             <?= \App\Helpers\Csrf::field() ?>
                             <button type="submit" class="btn-act danger" aria-label="Delete <?= e($u['name']) ?>"><i class="fas fa-trash-can"></i></button>
                         </form>

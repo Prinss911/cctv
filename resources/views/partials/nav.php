@@ -24,10 +24,10 @@
                 <a href="tel:<?= e(setting('phone_number')) ?>" class="nav-phone d-none d-lg-inline">
                     <i class="fas fa-phone-alt me-1"></i><?= e(setting('phone_number', '0812-3456-7890')) ?>
                 </a>
-                <button id="theme-toggle" onclick="toggleTheme()" class="theme-btn" title="Ganti tema" aria-label="Toggle dark mode">
+                <button id="theme-toggle" type="button" class="theme-btn" title="Ganti tema" aria-label="Toggle dark mode">
                     <i id="theme-icon" class="fas fa-moon"></i>
                 </button>
-                <a href="https://wa.me/<?= e(setting('whatsapp_number', '6281234567890')) ?>" target="_blank" rel="noopener" class="nav-cta">
+                <a href="https://wa.me/<?= e(setting('whatsapp_number', '6281234567890')) ?>" target="_blank" rel="noopener noreferrer" class="nav-cta">
                     <i class="fab fa-whatsapp me-1"></i>Hubungi
                 </a>
             </div>

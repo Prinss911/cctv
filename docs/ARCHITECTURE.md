@@ -749,7 +749,7 @@ Autoloader terdapat di `bootstrap/autoload.php` menggunakan `spl_autoload_regist
 |---|---|---|---|
 | GET | `/admin/login` | `Admin\AuthController@showLogin` | Tampilkan form login |
 | POST | `/admin/login` | `Admin\AuthController@login` | Proses login |
-| GET | `/admin/logout` | `Admin\AuthController@logout` | Logout & destroy session |
+| POST | `/admin/logout` | `Admin\AuthController@logout` | Logout & destroy session |
 
 ### Admin — Dashboard
 

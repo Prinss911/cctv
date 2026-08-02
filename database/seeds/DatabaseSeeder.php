@@ -18,6 +18,11 @@ class DatabaseSeeder
 
     private function seedUsers(PDO $db): void
     {
+        if (env('APP_ENV', 'development') === 'production') {
+            echo "  Skipped: users (production - default admin credentials not seeded)\n";
+            return;
+        }
+
         $db->exec("DELETE FROM users");
         $stmt = $db->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
         // Admin utama

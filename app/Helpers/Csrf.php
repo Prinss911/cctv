@@ -39,10 +39,20 @@ class Csrf
             $token = $input['_csrf'] ?? '';
         }
         if (!hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
-            http_response_code(403);
-            die('CSRF token mismatch. Please refresh the page and try again.');
+            throw new \RuntimeException('CSRF token mismatch');
         }
-        // Rotate token after successful verification
-        self::generate();
+
+        if (!self::isAjaxRequest()) {
+            self::generate();
+        }
+    }
+
+    private static function isAjaxRequest(): bool
+    {
+        $contentType = (string)($_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '');
+        $requestedWith = (string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '');
+
+        return stripos($contentType, 'application/json') === 0
+            || strcasecmp($requestedWith, 'XMLHttpRequest') === 0;
     }
 }

@@ -203,8 +203,25 @@ abstract class BaseModel
     public function updateSortOrder(array $ids): void
     {
         $stmt = $this->db->prepare("UPDATE {$this->table} SET sort_order = ? WHERE {$this->primaryKey} = ?");
-        foreach ($ids as $order => $id) {
-            $stmt->execute([$order + 1, $id]);
+        $this->db->beginTransaction();
+
+        try {
+            foreach ($ids as $order => $id) {
+                $validatedId = filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+                if ($validatedId === false) {
+                    throw new \InvalidArgumentException('Invalid sort order id');
+                }
+
+                $stmt->execute([$order + 1, (int) $validatedId]);
+            }
+
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
+            throw $e;
         }
     }
 

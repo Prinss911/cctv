@@ -2,6 +2,22 @@
     'use strict';
     var THEME_KEY = 'cctv_theme';
 
+    function getStoredTheme() {
+        try {
+            return localStorage.getItem(THEME_KEY) || 'light';
+        } catch (error) {
+            return 'light';
+        }
+    }
+
+    function setStoredTheme(theme) {
+        try {
+            localStorage.setItem(THEME_KEY, theme);
+        } catch (error) {
+            // Ignore storage failures to preserve runtime behavior.
+        }
+    }
+
     function debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -15,15 +31,18 @@
     }
 
     function applyTheme(theme) {
-        document.getElementById('html-root').setAttribute('data-bs-theme', theme);
+        var root = document.getElementById('html-root');
+        if (root) {
+            root.setAttribute('data-bs-theme', theme);
+        }
         var icon = document.getElementById('theme-icon');
         if (icon) icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
     }
 
     window.toggleTheme = function() {
-        var cur = localStorage.getItem(THEME_KEY) || 'light';
+        var cur = getStoredTheme();
         var next = cur === 'light' ? 'dark' : 'light';
-        localStorage.setItem(THEME_KEY, next);
+        setStoredTheme(next);
         applyTheme(next);
     };
 
@@ -101,7 +120,7 @@
 
     function initLightbox() {
         var modal = document.getElementById('galleryModal');
-        if (!modal) return;
+        if (!modal || typeof bootstrap === 'undefined') return;
         modal.addEventListener('show.bs.modal', function(e) {
             var src = e.relatedTarget.getAttribute('data-img');
             var img = document.getElementById('galleryModalImg');
@@ -110,6 +129,17 @@
                 var alt = e.relatedTarget.querySelector('img')?.getAttribute('alt') || 'Gallery image';
                 img.alt = alt;
             }
+        });
+    }
+
+    function initFaqToggles() {
+        document.querySelectorAll('.faq-question').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var item = button.closest('.faq-item');
+                if (!item) return;
+                var isOpen = item.classList.toggle('open');
+                button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
         });
     }
 
@@ -150,11 +180,17 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+        var themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', window.toggleTheme);
+        }
+
+        applyTheme(getStoredTheme());
         initReveal();
         initCounters();
         initScrollHandlers();
         initLightbox();
+        initFaqToggles();
         initMobileClose();
         initHeroCarousel();
     });

@@ -11,19 +11,9 @@ class PasswordResetModel extends BaseModel
     protected array $allowedOrderBy = ['id', 'created_at'];
 
     /**
-     * Get token by token string (for internal use)
-     */
-    public function getByToken(string $token): ?array
-    {
-        $stmt = $this->db->prepare("SELECT * FROM password_resets WHERE token = ?");
-        $stmt->execute([$token]);
-        $result = $stmt->fetch();
-        return $result ?: null;
-    }
-
-    /**
      * Create a password reset token for the given email
      * Deletes any existing tokens for this email and creates a new one
+     * Only the SHA-256 hash is stored at rest; the raw token is returned for the URL
      */
     public function createToken(string $email): string
     {
@@ -38,7 +28,7 @@ class PasswordResetModel extends BaseModel
         $stmt = $this->db->prepare(
             "INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)"
         );
-        $stmt->execute([$email, $token, $expiresAt]);
+        $stmt->execute([$email, hash('sha256', $token), $expiresAt]);
 
         return $token;
     }
@@ -52,9 +42,44 @@ class PasswordResetModel extends BaseModel
         $stmt = $this->db->prepare(
             "SELECT * FROM password_resets WHERE token = ? AND used = 0 AND expires_at > datetime('now')"
         );
-        $stmt->execute([$token]);
+        $stmt->execute([hash('sha256', $token)]);
         $result = $stmt->fetch();
         return $result ?: null;
+    }
+
+    /**
+     * Record a password reset request attempt (rate limiting)
+     */
+    public function recordAttempt(string $email, string $ip): void
+    {
+        $stmt = $this->db->prepare(
+            "INSERT INTO password_reset_attempts (email, ip_address, attempted_at) VALUES (?, ?, ?)"
+        );
+        $stmt->execute([$email, $ip, time()]);
+    }
+
+    /**
+     * Count recent reset requests for an email OR IP within the window
+     */
+    public function countRecentRequests(string $email, string $ip, int $windowSeconds = 3600): int
+    {
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*) FROM password_reset_attempts
+             WHERE (email = ? OR ip_address = ?) AND attempted_at > ?"
+        );
+        $stmt->execute([$email, $ip, time() - $windowSeconds]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Clean up reset attempt records older than the given age
+     * Returns number of deleted records
+     */
+    public function cleanupResetAttempts(int $olderThanSeconds = 86400): int
+    {
+        $stmt = $this->db->prepare("DELETE FROM password_reset_attempts WHERE attempted_at < ?");
+        $stmt->execute([time() - $olderThanSeconds]);
+        return $stmt->rowCount();
     }
 
     /**

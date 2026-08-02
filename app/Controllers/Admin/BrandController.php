@@ -243,12 +243,14 @@ class BrandController
 
     public function reorder(): void
     {
-        $ids = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
-        $updates = [];
-        foreach ($ids as $order => $id) {
-            $updates[] = ['id' => $id, 'sort_order' => $order + 1];
-        }
-        $this->brandModel->updateSortOrder($updates);
+        $order = json_decode(file_get_contents('php://input'), true)['ids'] ?? [];
+        $ids = array_map(
+            static fn($item) => is_array($item) ? ($item['id'] ?? null) : $item,
+            $order
+        );
+        $ids = array_values(array_filter($ids, static fn($id) => $id !== null));
+
+        $this->brandModel->updateSortOrder($ids);
         header('Content-Type: application/json');
         echo json_encode(['success' => true]);
     }

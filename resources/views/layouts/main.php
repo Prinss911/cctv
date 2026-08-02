@@ -71,12 +71,7 @@ $metaDesc = setting('meta_description', '');
     ?>
     <link rel="preload" href="<?= asset('css/app.css') ?>" as="style" onload="this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="<?= asset('css/app.css') ?>"></noscript>
-    <script>
-        (function(){
-            var t = localStorage.getItem('cctv_theme') || 'light';
-            document.getElementById('html-root').setAttribute('data-bs-theme', t);
-        })();
-    </script>
+    <script src="<?= asset('js/theme-init.js') ?>" data-theme-key="cctv_theme"></script>
     <?php
     // JSON-LD Structured Data
     try {

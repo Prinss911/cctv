@@ -124,8 +124,6 @@ class Auth
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['user_role'] = $user['role'];
-        $_SESSION['login_attempts'] = 0;
-        unset($_SESSION['login_locked_until']);
 
         return true;
     }
@@ -159,17 +157,6 @@ class Auth
                 $params['secure'], $params['httponly']
             );
         }
-    }
-
-    public static function isLockedOut(): bool
-    {
-        return isset($_SESSION['login_locked_until']) && time() < $_SESSION['login_locked_until'];
-    }
-
-    public static function lockoutRemaining(): int
-    {
-        if (!self::isLockedOut()) return 0;
-        return $_SESSION['login_locked_until'] - time();
     }
 
     /**
