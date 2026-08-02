@@ -31,31 +31,41 @@ $metaDesc = setting('meta_description', '');
     <?php endif; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"></noscript>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <?php
-    // Critical CSS for above-the-fold content
+    // Critical CSS for above-the-fold content — selector-based extraction
+    function extractCriticalCss($css, $patterns) {
+        $len = strlen($css);
+        $pos = 0;
+        $out = '';
+        while ($pos < $len) {
+            $brace = strpos($css, '{', $pos);
+            if ($brace === false) break;
+            $selector = trim(substr($css, $pos, $brace - $pos));
+            $depth = 1;
+            $i = $brace + 1;
+            while ($depth > 0 && $i < $len) {
+                if ($css[$i] === '{') $depth++;
+                if ($css[$i] === '}') $depth--;
+                $i++;
+            }
+            $block = substr($css, $brace, $i - $brace);
+            $full = $selector . $block;
+            foreach ($patterns as $p) {
+                if (str_contains($full, $p)) { $out .= $full . "\n"; break; }
+            }
+            $pos = $i;
+        }
+        return $out;
+    }
     $cssPath = __DIR__ . '/../../../public/assets/css/app.css';
     if (file_exists($cssPath)) {
         $css = file_get_contents($cssPath);
-        $lines = explode("\n", $css);
-        // Define line ranges for critical sections (0-indexed, inclusive)
-        $ranges = [
-            [8, 40],   // :root and [data-bs-theme="dark"] (lines 9-41)
-            [42, 58],  // Base Reset & Body (lines 43-59)
-            [60, 81],  // Typography (h1-h6, .display-heading, img, a) (lines 62-82)
-            [83, 100], // Section System (lines 84-101)
-            [143, 324],// Navbar (lines 144-325)
-            [326, 442],// Hero (lines 327-443)
-            [532, 571] // About Section (lines 534-572)
-        ];
-        $criticalCss = '';
-        foreach ($ranges as [$start, $end]) {
-            for ($i = $start; $i <= $end && $i < count($lines); $i++) {
-                $criticalCss .= $lines[$i] . "\n";
-            }
-        }
+        $selectors = [':root', '[data-bs-theme="dark"]', 'html', 'body', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', '.display-heading', 'img', 'a', '.section', '.section-cream', '.section-dark', '.section-header', '.section-label', '.section-heading', '.section-desc', '.site-nav', '.nav-links', '.nav-cta', '.theme-btn', '.hero-slide', '.hero-content', '.about-'];
+        $criticalCss = extractCriticalCss($css, $selectors);
         echo '<style>' . $criticalCss . '</style>';
     }
     ?>
@@ -138,7 +148,7 @@ $metaDesc = setting('meta_description', '');
     <?php \App\Helpers\View::partial('footer'); ?>
     <?php \App\Helpers\View::partial('whatsapp-widget'); ?>
     <a href="#" id="back-to-top" class="back-top"><i class="fas fa-arrow-up"></i></a>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= asset('js/app.js') ?>"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="<?= asset('js/app.js') ?>" defer></script>
 </body>
 </html>

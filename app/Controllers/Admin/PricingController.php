@@ -25,7 +25,9 @@ class PricingController
     {
         $items = $this->model->getAllWithBrand();
         $brands = $this->brandModel->getAll();
-        View::render('admin/pricing/index', compact('items', 'brands'), 'admin');
+        $count = count($items);
+        $pagination = ['current_page' => 1, 'last_page' => 1, 'total' => $count, 'per_page' => $count];
+        View::render('admin/pricing/index', compact('items', 'brands', 'pagination'), 'admin');
     }
 
     public function create(): void

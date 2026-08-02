@@ -18,8 +18,9 @@ class AboutFeatureController
 
     public function index(): void
     {
-        $items = $this->model->getAll();
-        View::render('admin/about-features/index', compact('items'), 'admin');
+        $page = (int)($_GET['page'] ?? 1);
+        $result = $this->model->paginate('sort_order ASC', 20, $page);
+        View::render('admin/about-features/index', ['items' => $result['data'], 'pagination' => $result], 'admin');
     }
 
     public function create(): void

@@ -19,8 +19,9 @@ class GalleryController
 
     public function index(): void
     {
-        $items = $this->model->getAll();
-        View::render('admin/gallery/index', compact('items'), 'admin');
+        $page = (int)($_GET['page'] ?? 1);
+        $result = $this->model->paginate('sort_order ASC', 20, $page);
+        View::render('admin/gallery/index', ['items' => $result['data'], 'pagination' => $result], 'admin');
     }
 
     public function create(): void

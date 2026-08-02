@@ -13,7 +13,8 @@ $isLogin = $currentPath === '/admin/login';
     <title>Admin — <?= e(setting('site_name', 'Bayu CCTV')) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"></noscript>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -89,36 +90,9 @@ $isLogin = $currentPath === '/admin/login';
         </div>
     </div>
 <?php endif; ?>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-<script src="<?= asset('js/admin.js') ?>"></script>
-<script>
-(function () {
-    function applyTheme(t) {
-        document.documentElement.setAttribute('data-bs-theme', t);
-        var icon = document.getElementById('admin-theme-icon');
-        if (icon) icon.className = t === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-    }
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" defer></script>
+<script src="<?= asset('js/admin.js') ?>" defer></script>
 
-    applyTheme(localStorage.getItem('cctv_admin_theme') || 'light');
-
-    window.toggleAdminTheme = function () {
-        var current = document.documentElement.getAttribute('data-bs-theme');
-        var next = current === 'dark' ? 'light' : 'dark';
-        localStorage.setItem('cctv_admin_theme', next);
-        applyTheme(next);
-    };
-
-    var toggle  = document.getElementById('sidebar-toggle');
-    var sidebar = document.getElementById('sidebar');
-    var overlay = document.getElementById('sidebar-overlay');
-
-    function openSidebar()  { if (sidebar) sidebar.classList.add('open'); if (overlay) overlay.classList.add('open'); }
-    function closeSidebar() { if (sidebar) sidebar.classList.remove('open'); if (overlay) overlay.classList.remove('open'); }
-
-    if (toggle)  toggle.addEventListener('click', openSidebar);
-    if (overlay) overlay.addEventListener('click', closeSidebar);
-})();
-</script>
 </body>
 </html>

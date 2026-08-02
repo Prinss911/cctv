@@ -19,23 +19,7 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Ikon</label>
-                <div class="row g-2 mb-2" id="icon-picker">
-                    <?php $icons = ['fa-shield-alt','fa-user-tie','fa-hard-hat','fa-hand-holding-heart','fa-headset','fa-layer-group','fa-check-circle','fa-cogs','fa-tools','fa-star','fa-heart','fa-thumbs-up','fa-check','fa-bolt','fa-gem','fa-leaf','fa-shield-halved','fa-clock','award']; ?>
-                    <?php foreach ($icons as $ic): ?>
-                    <div class="col-auto">
-                        <label class="icon-option <?= $item['icon'] === $ic ? 'selected' : '' ?>" data-icon="<?= $ic ?>">
-                            <input type="radio" name="icon" value="<?= $ic ?>" <?= $item['icon'] === $ic ? 'checked' : '' ?>>
-                            <?php if ($ic === 'award'): ?>
-                            <i class="fas fa-award"></i>
-                            <?php else: ?>
-                            <i class="fas <?= $ic ?>"></i>
-                            <?php endif; ?>
-                        </label>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-                <input type="text" class="form-control mt-2" id="icon_custom" placeholder="Atau ketik kelas ikon kustom" value="<?= e($item['icon']) ?>">
-                <div class="form-text">Pilih ikon dari daftar atau ketik kelas Font Awesome kustom.</div>
+                <?php \App\Helpers\View::partial('icon-picker', ['icons' => ['fa-shield-alt','fa-user-tie','fa-hard-hat','fa-hand-holding-heart','fa-headset','fa-layer-group','fa-check-circle','fa-cogs','fa-tools','fa-star','fa-heart','fa-thumbs-up','fa-check','fa-bolt','fa-gem','fa-leaf','fa-shield-halved','fa-clock','award'], 'selected' => $item['icon'] ?? 'fa-check-circle']); ?>
             </div>
             <div class="mb-3">
                 <label for="border_color" class="form-label">Warna Border / Aksen</label>
@@ -71,44 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
     colorPicker.addEventListener('input', function() { colorText.value = this.value; });
     colorText.addEventListener('input', function() { colorPicker.value = this.value; });
 
-    // Icon picker styling
-    document.querySelectorAll('.icon-option').forEach(function(el) {
-        el.addEventListener('click', function() {
-            document.querySelectorAll('.icon-option').forEach(function(o) { o.classList.remove('selected'); });
-            this.classList.add('selected');
-            document.getElementById('icon_custom').value = this.dataset.icon;
-        });
-    });
-
-    // Custom icon input clears radio selection
-    document.getElementById('icon_custom').addEventListener('input', function() {
-        document.querySelectorAll('.icon-option').forEach(function(o) { o.classList.remove('selected'); });
-    });
 });
 </script>
 
-<style>
-.icon-option {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border: 2px solid var(--border, #dee2e6);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all .15s ease;
-    font-size: 1.15rem;
-    color: var(--text, #495057);
-}
-.icon-option:hover {
-    border-color: var(--accent, #d4a373);
-    background: rgba(212,163,115,.08);
-}
-.icon-option.selected {
-    border-color: var(--accent, #d4a373);
-    background: rgba(212,163,115,.15);
-    color: var(--accent, #d4a373);
-}
-.icon-option input[type="radio"] { display: none; }
-</style>

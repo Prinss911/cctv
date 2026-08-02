@@ -1107,6 +1107,31 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--ink);
 }
 
+/* ---- Icon Picker ---- */
+.icon-option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--border, #dee2e6);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .15s ease;
+    font-size: 1.15rem;
+    color: var(--text, #495057);
+}
+.icon-option:hover {
+    border-color: var(--accent, #d4a373);
+    background: rgba(212,163,115,.08);
+}
+.icon-option.selected {
+    border-color: var(--accent, #d4a373);
+    background: rgba(212,163,115,.15);
+    color: var(--accent, #d4a373);
+}
+.icon-option input[type="radio"] { display: none; }
+
 /* ---- Skip Link ---- */
 
 /* Settings tabs - horizontal scroll on mobile */

@@ -40,6 +40,7 @@
             });
         }
 
+        initIconPicker();
         var sortable = document.getElementById('sortable-list');
         if (sortable && typeof Sortable !== 'undefined') {
             new Sortable(sortable, {
@@ -94,6 +95,24 @@
 
         initFormSubmit();
     });
+
+    function initIconPicker() {
+        var picker = document.getElementById('icon-picker');
+        if (!picker) return;
+        picker.querySelectorAll('.icon-option').forEach(function(el) {
+            el.addEventListener('click', function() {
+                picker.querySelectorAll('.icon-option').forEach(function(o) { o.classList.remove('selected'); });
+                this.classList.add('selected');
+                document.getElementById('icon_custom').value = this.dataset.icon;
+            });
+        });
+        var customInput = document.getElementById('icon_custom');
+        if (customInput) {
+            customInput.addEventListener('input', function() {
+                picker.querySelectorAll('.icon-option').forEach(function(o) { o.classList.remove('selected'); });
+            });
+        }
+    }
 
     function initFormSubmit() {
         document.querySelectorAll('.admin-form').forEach(function(form) {
