@@ -19,5 +19,6 @@
     'reorderUrl' => '/admin/sliders/reorder',
     'baseEditUrl' => '/admin/sliders',
     'baseDeleteUrl' => '/admin/sliders',
+    'items' => $items,
 ]) ?>
 <?php \App\Helpers\View::partial('pagination', compact('pagination')); ?>

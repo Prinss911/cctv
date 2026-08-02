@@ -34,5 +34,6 @@
     'reorderUrl' => '/admin/testimonials/reorder',
     'baseEditUrl' => '/admin/testimonials',
     'baseDeleteUrl' => '/admin/testimonials',
+    'items' => $items,
 ]) ?>
 <?php \App\Helpers\View::partial('pagination', compact('pagination')); ?>

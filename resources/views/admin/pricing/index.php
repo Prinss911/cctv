@@ -37,5 +37,6 @@
     'reorderUrl' => '/admin/pricing/reorder',
     'baseEditUrl' => '/admin/pricing',
     'baseDeleteUrl' => '/admin/pricing',
+    'items' => $items,
 ]) ?>
 <?php \App\Helpers\View::partial('pagination', compact('pagination')); ?>

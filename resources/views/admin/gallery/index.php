@@ -20,5 +20,6 @@
     'reorderUrl' => '/admin/gallery/reorder',
     'baseEditUrl' => '/admin/gallery',
     'baseDeleteUrl' => '/admin/gallery',
+    'items' => $items,
 ]) ?>
 <?php \App\Helpers\View::partial('pagination', compact('pagination')); ?>
