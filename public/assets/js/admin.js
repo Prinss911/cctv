@@ -179,7 +179,7 @@
         toastEl.className = 'toast show';
         toastEl.setAttribute('role', 'alert');
         toastEl.style.background = 'var(--ink)';
-        toastEl.style.color = 'white';
+        toastEl.style.color = 'var(--warm-white)';
         toastEl.style.border = 'none';
         toastEl.style.fontSize = '0.85rem';
 

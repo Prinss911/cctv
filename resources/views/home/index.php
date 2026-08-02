@@ -113,7 +113,7 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
-                <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener noreferrer" class="btn-hero btn-hero-fill mt-4" style="display:inline-flex">
+                <a href="https://wa.me/<?= e(setting('whatsapp_number')) ?>" target="_blank" rel="noopener noreferrer" class="btn-hero btn-hero-fill mt-4">
                     <i class="fab fa-whatsapp"></i> Konsultasi Gratis
                 </a>
             </div>
@@ -339,11 +339,11 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
                 <?php endforeach; ?>
             </div>
             <?php if (count($chunks) > 1): ?>
-            <div class="mt-4 d-flex gap-2">
-                <button class="btn-hero btn-hero-ghost" style="padding:0.5rem 1.2rem;font-size:0.75rem" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+            <div class="testimonial-controls">
+                <button class="testimonial-control testimonial-control-outline" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev" aria-label="Testimoni sebelumnya">
                     <i class="fas fa-arrow-left me-1"></i> Prev
                 </button>
-                <button class="btn-hero btn-hero-ghost" style="padding:0.5rem 1.2rem;font-size:0.75rem;background:var(--ink);color:white;border-color:var(--ink)" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                <button class="testimonial-control testimonial-control-fill" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next" aria-label="Testimoni berikutnya">
                     Next <i class="fas fa-arrow-right ms-1"></i>
                 </button>
             </div>
@@ -409,7 +409,7 @@ echo '<script type="application/ld+json">' . json_encode($orgData, JSON_HEX_TAG 
 <section class="cta-section">
     <div class="container cta-inner text-center reveal">
         <h2 class="cta-heading mb-3">Siap Pasang CCTV?</h2>
-        <p style="color:rgba(255,255,255,0.6);max-width:450px;margin:0 auto 2rem;font-size:1rem;line-height:1.8">
+        <p class="cta-sub mx-auto">
             Konsultasi gratis dan survey lokasi tanpa biaya. Hubungi kami untuk penawaran terbaik.
         </p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">

@@ -713,7 +713,7 @@ h1, h2, h3, h4, h5, h6 {
 /* ---- Drag ---- */
 .handle {
     cursor: grab !important;
-    color: var(--border);
+    color: var(--ink);
     transition: var(--transition);
 }
 

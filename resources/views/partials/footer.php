@@ -7,7 +7,7 @@
                     <img src="<?= upload_url(setting('logo')) ?>" alt="" height="30">
                     <?php else: ?>
                     <span class="nav-brand-mark" style="background:var(--rust)"><i class="fas fa-shield-halved" style="font-size:0.7rem"></i></span>
-                    <span style="font-family:var(--font-display);color:white;font-size:1.1rem"><?= e(setting('site_name', 'Bayu CCTV')) ?></span>
+                    <span class="footer-brand-name"><?= e(setting('site_name', 'Bayu CCTV')) ?></span>
                     <?php endif; ?>
                 </div>
                 <p style="line-height:1.8;font-size:0.88rem"><?= e(setting('site_tagline', 'Solusi Keamanan Terpercaya')) ?></p>

@@ -91,7 +91,7 @@ a:hover {
 
 .section-dark {
     background: var(--ink);
-    color: white;
+    color: var(--warm-white);
 }
 
 [data-bs-theme="dark"] .section-cream {
@@ -891,7 +891,7 @@ a:hover {
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
-    border-radius: 0; 0;
+    border-radius: 0;
     transition: all 0.25s;
     display: inline-flex;
     align-items: center;
@@ -1055,7 +1055,7 @@ a:hover {
     height: 40px;
     min-width: 40px;
     background: var(--navy);
-    color: white;
+    color: var(--warm-white);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1075,6 +1075,57 @@ a:hover {
     font-size: 0.78rem;
     color: var(--text-muted);
     display: block;
+}
+
+.testimonial-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.testimonial-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1.5;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.testimonial-control-outline {
+    background: transparent;
+    color: var(--ink);
+}
+
+.testimonial-control-outline:hover,
+.testimonial-control-outline:focus-visible {
+    background: var(--ink);
+    color: var(--warm-white);
+}
+
+.testimonial-control-fill {
+    background: var(--ink);
+    color: var(--warm-white);
+}
+
+.testimonial-control-fill:hover,
+.testimonial-control-fill:focus-visible {
+    background: var(--rust);
+    border-color: var(--rust);
+    color: white;
+}
+
+.testimonial-control:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--rust) 45%, transparent);
+    outline-offset: 3px;
 }
 
 /* ---- Clients ---- */
@@ -1186,7 +1237,7 @@ a:hover {
 .cta-sub {
     color: rgba(255, 255, 255, 0.6);
     font-size: 1rem;
-    max-width: 480px;
+    max-width: 450px;
     line-height: 1.8;
     margin-bottom: 2rem;
 }
@@ -1417,6 +1468,12 @@ textarea.form-control-custom {
     margin-bottom: 1rem;
 }
 
+.footer-brand-name {
+    font-family: var(--font-display);
+    color: white;
+    font-size: 1.1rem;
+}
+
 .footer-brand img {
     max-height: 30px;
     width: auto;
@@ -1578,7 +1635,7 @@ textarea.form-control-custom {
 
 .wa-tooltip {
     background: var(--ink);
-    color: white;
+    color: var(--warm-white);
     padding: 0.4rem 0.85rem;
     font-size: 0.78rem;
     font-weight: 600;
@@ -1623,7 +1680,7 @@ textarea.form-control-custom {
 
 .back-top:hover {
     background: var(--ink);
-    color: white;
+    color: var(--warm-white);
     border-color: var(--ink);
 }
 

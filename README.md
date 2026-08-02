@@ -247,7 +247,10 @@ bayu-cctv/
 |       `-- DatabaseSeeder.php  # Data awal untuk development
 |
 |-- docs/
-|   `-- ARCHITECTURE.md         # Dokumentasi teknis arsitektur
+|   |-- ARCHITECTURE.md         # Dokumentasi teknis arsitektur
+|   `-- CLOUDFLARE.md           # Panduan deployment Cloudflare
+|
+|-- DESIGN.md                   # Kontrak design system (color tokens, theme behavior)
 |
 |-- public/                     # Document root web server
 |   |-- index.php               # Entry point semua request

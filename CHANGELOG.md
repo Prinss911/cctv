@@ -5,6 +5,20 @@ Semua perubahan penting pada proyek ini akan didokumentasikan di file ini.
 Format berdasarkan [Keep a Changelog](https://keepachangelog.com/id/1.0.0/),
 dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
+## [Unreleased]
+
+### Diperbaiki
+- **Light/dark theme inconsistency** — Testimonial carousel controls, toast notifications, dan drag handle icons tidak mengikuti token theme semantic, menyebabkan kontras hilang di dark mode
+  - Testimonial controls: hapus inline `style="background:var(--ink);color:white;border-color:var(--ink)"`, buat class `.testimonial-control-outline` dan `.testimonial-control-fill` dengan token `--ink` dan `--warm-white`
+  - Toast admin: ganti `color: 'white'` menjadi `var(--warm-white)` di `admin.js`
+  - Drag handle icon: ganti `color: var(--border)` menjadi `var(--ink)` di `admin.css`
+  - Footer brand name, CTA sub copy: migrasi inline style ke class
+  - Inverse colors: `.section-dark`, `.testi-avatar`, `.wa-tooltip`, `.back-top:hover` sekarang pakai `var(--warm-white)` bukan literal `white`
+  - CSS syntax fix: `border-radius: 0; 0;` → `border-radius: 0;`
+
+### Ditambahkan
+- **DESIGN.md** — Kontrak design system untuk token warna, spacing, primitives, theme behavior, accessibility constraints, dan accepted debt
+
 ## [1.7.0] - 2026-08-02
 
 ### Ditambahkan
